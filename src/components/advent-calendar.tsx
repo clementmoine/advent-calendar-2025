@@ -2,7 +2,15 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
-import { Gift, Lock, Loader2, LockKeyhole, TreePine, Bed } from 'lucide-react';
+import {
+  Gift,
+  Lock,
+  Loader2,
+  LockKeyhole,
+  TreePine,
+  Bed,
+  Check,
+} from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import GameViewer from '@/components/game-viewer';
@@ -137,9 +145,8 @@ export default function AdventCalendar() {
   // Render a single calendar card with animation
   const renderCalendarCard = useCallback(
     (day: number, index: number, isAnimated: boolean = false) => {
-      const isUnlocked = isAnimated
-        ? true
-        : day <= (calendarData?.availableDays || 0);
+      const isUnlocked =
+        isAnimated || day <= (calendarData?.availableDays || 0);
       const isSelected = selectedDay === day;
       const gameInfoRaw = calendarData?.games?.[day];
       const gameInfo = (gameInfoRaw || {
@@ -149,73 +156,95 @@ export default function AdventCalendar() {
         hasEnvWord?: boolean;
         disabledLabel?: string | null;
       };
-      const isCompleted = isAnimated ? false : checkDayCompleted(day);
-      const completedWord = isAnimated ? null : getWord(day);
+      const isCompleted = !isAnimated && checkDayCompleted(day);
+      const isDisabled = !!gameInfo.disabledLabel || !gameInfo.hasEnvWord;
+      const canClick = !isAnimated && !isDisabled;
 
-      const isDisabledCard = !!gameInfo.disabledLabel || !gameInfo.hasEnvWord;
+      // Determine card styling
+      let cardClasses = 'w-full h-full overflow-hidden ';
+      if (!canClick) {
+        cardClasses += 'cursor-not-allowed ';
+      } else {
+        cardClasses += 'cursor-pointer ';
+      }
+
+      if (isUnlocked) {
+        if (isDisabled) {
+          cardClasses +=
+            'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 opacity-60';
+        } else {
+          cardClasses +=
+            'bg-emerald-100 dark:bg-emerald-900/30 border-emerald-300 dark:border-emerald-600 hover:bg-emerald-200 dark:hover:bg-emerald-900/40';
+        }
+      } else {
+        cardClasses +=
+          'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 opacity-50';
+      }
+
+      if (isSelected) {
+        cardClasses += ' ring-2 ring-emerald-500 dark:ring-emerald-400';
+      }
+
+      // Render icon/content
+      const renderContent = () => {
+        if (!isUnlocked) {
+          return (
+            <div className='size-8 mx-auto text-slate-600 dark:text-slate-300'>
+              <Lock className='size-8 mx-auto text-slate-400 dark:text-slate-500' />
+            </div>
+          );
+        }
+
+        if (isCompleted) {
+          return (
+            <div className='size-8 mx-auto text-emerald-600 dark:text-emerald-400'>
+              <Check className='mx-auto md:size-8 size-6' />
+            </div>
+          );
+        }
+
+        if (gameInfo.disabledLabel) {
+          const Icon =
+            day === 25 ? TreePine : isWeekend(day) ? Bed : LockKeyhole;
+          return (
+            <div className='size-8 mx-auto text-slate-600 dark:text-slate-300'>
+              <Icon className='mx-auto md:size-8 size-6' />
+            </div>
+          );
+        }
+
+        if (gameInfo.hasEnvWord) {
+          const Icon = day === 25 ? TreePine : Gift;
+          return (
+            <div className='size-8 mx-auto text-emerald-600 dark:text-emerald-400'>
+              <Icon className='mx-auto md:size-8 size-6' />
+            </div>
+          );
+        }
+
+        return (
+          <div className='size-8 mx-auto text-slate-600 dark:text-slate-300'>
+            <Loader2 className='mx-auto md:size-8 size-6 animate-spin' />
+          </div>
+        );
+      };
+
       const cardContent = (
         <Card
-          className={`size-32 card-hover ${
-            isAnimated || isDisabledCard
-              ? 'cursor-not-allowed'
-              : 'cursor-pointer'
-          } ${
-            isUnlocked
-              ? isCompleted
-                ? 'bg-emerald-100 dark:bg-emerald-900/30 border-emerald-300 dark:border-emerald-600 hover:bg-emerald-200 dark:hover:bg-emerald-900/40'
-                : isDisabledCard
-                  ? 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 opacity-60'
-                  : 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-700 hover:bg-emerald-100 dark:hover:bg-emerald-900/30'
-              : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 opacity-50'
-          } ${isSelected ? 'ring-2 ring-emerald-500 dark:ring-emerald-400' : ''}`}
-          onClick={
-            isAnimated || isDisabledCard ? undefined : () => handleDayClick(day)
-          }
+          className={cardClasses}
+          onClick={canClick ? () => handleDayClick(day) : undefined}
         >
-          <CardContent className='px-3 py-2 text-center h-full flex flex-col justify-center'>
-            <div className='text-3xl font-bold mb-2 text-slate-900 dark:text-slate-100'>
+          <CardContent className='px-3 py-2 text-center h-full flex flex-col justify-center overflow-hidden'>
+            <div className='font-bold mb-2 text-slate-900 dark:text-slate-100 overflow-hidden md:text-3xl text-lg'>
               {day}
             </div>
-            {isUnlocked ? (
-              isCompleted ? (
-                <div className='flex flex-col gap-1'>
-                  <div className='text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-200 dark:bg-emerald-800 px-2 py-1 rounded'>
-                    ✓ COMPLÉTÉ
-                  </div>
-                  <div className='text-sm font-mono text-emerald-800 dark:text-emerald-200 bg-white dark:bg-slate-700 px-2 py-1 rounded border'>
-                    {completedWord}
-                  </div>
-                </div>
-              ) : gameInfo.disabledLabel ? (
-                <div className='size-8 mx-auto text-slate-600 dark:text-slate-300'>
-                  {day === 25 ? (
-                    <TreePine className='size-8 mx-auto' />
-                  ) : isWeekend(day) ? (
-                    <Bed className='size-8 mx-auto' />
-                  ) : (
-                    <LockKeyhole className='size-8 mx-auto' />
-                  )}
-                </div>
-              ) : gameInfo.hasEnvWord ? (
-                <div className='size-8 mx-auto text-emerald-600 dark:text-emerald-400'>
-                  {day === 25 ? (
-                    <TreePine className='size-8 mx-auto' />
-                  ) : (
-                    <Gift className='size-8 mx-auto' />
-                  )}
-                </div>
-              ) : (
-                <div className='text-xs font-medium text-slate-600 dark:text-slate-300'>
-                  Aucun mot affecté
-                </div>
-              )
-            ) : (
-              <Lock className='size-8 mx-auto text-slate-400 dark:text-slate-500' />
-            )}
-            {isUnlocked && !isCompleted && (
-              <div className='mt-2 text-xs text-slate-600 dark:text-slate-300 h-4 flex items-center justify-center'>
+
+            {renderContent()}
+
+            {isUnlocked && (
+              <div className='mt-2 text-xs text-slate-600 dark:text-slate-300 h-4 items-center justify-center text-ellipsis overflow-hidden whitespace-nowrap w-full'>
                 {isAnimated ? (
-                  <Loader2 className='size-3 animate-spin' />
+                  <Loader2 className='size-3 animate-spin mx-auto' />
                 ) : (
                   gameInfo.disabledLabel || gameInfo.name
                 )}
@@ -225,37 +254,24 @@ export default function AdventCalendar() {
         </Card>
       );
 
-      if (isAnimated) {
-        return (
-          <motion.div
-            key={day}
-            initial={{
-              opacity: 0,
-              scale: 0.8,
-              y: -50,
-              rotateX: -90,
-            }}
-            animate={{
-              opacity: 1,
-              scale: 1,
-              y: 0,
-              rotateX: 0,
-            }}
-            transition={{
-              duration: 0.5,
-              delay: index * (0.015 + index * 0.0008),
-              ease: [0.25, 0.46, 0.45, 0.94],
-              type: 'spring',
-              stiffness: 120 + index * 8,
-              damping: 12 - index * 0.15,
-            }}
-          >
-            {cardContent}
-          </motion.div>
-        );
-      }
-
-      return cardContent;
+      return (
+        <motion.div
+          key={day}
+          className='overflow-hidden size-32'
+          initial={{ opacity: 0, scale: 0.8, y: -50, rotateX: -90 }}
+          animate={{ opacity: 1, scale: 1, y: 0, rotateX: 0 }}
+          transition={{
+            duration: 0.5,
+            delay: index * (0.015 + index * 0.0008),
+            ease: [0.25, 0.46, 0.45, 0.94],
+            type: 'spring',
+            stiffness: 120 + index * 8,
+            damping: 12 - index * 0.15,
+          }}
+        >
+          {cardContent}
+        </motion.div>
+      );
     },
     [
       calendarData,
@@ -266,6 +282,42 @@ export default function AdventCalendar() {
       isWeekend,
     ]
   );
+
+  const renderWeeks = useCallback(() => {
+    const year = new Date().getFullYear();
+    const start = new Date(year, 11, 1); // Dec 1
+    const startDay = start.getDay(); // 0=Sun..6=Sat
+    const leading = (startDay + 6) % 7; // shift so Mon=0
+    const totalCells = leading + 25;
+    const rows = Math.ceil(totalCells / 7);
+    const cells: (number | null)[] = Array.from(
+      { length: totalCells },
+      (_, i) => {
+        const day = i - leading + 1;
+        return day >= 1 && day <= 25 ? day : null;
+      }
+    );
+    while (cells.length % 7 !== 0) cells.push(null);
+
+    const weeks: (number | null)[][] = [];
+    for (let r = 0; r < rows; r++) {
+      weeks.push(cells.slice(r * 7, r * 7 + 7));
+    }
+
+    return weeks.map((week, wi) => (
+      <div key={wi} className='grid grid-cols-7 gap-4 '>
+        {week.map((day, di) => (
+          <div key={`${wi}-${di}`} className='flex items-center justify-center'>
+            {day ? (
+              renderCalendarCard(day, day - 1, showAnimation)
+            ) : (
+              <div className='size-32 border border-transparent overflow-hidden' />
+            )}
+          </div>
+        ))}
+      </div>
+    ));
+  }, [renderCalendarCard, showAnimation]);
 
   // Si un jeu est en cours, afficher le GameViewer
   if (currentGame) {
@@ -314,44 +366,7 @@ export default function AdventCalendar() {
           </div>
 
           {/* Weeks */}
-          {(() => {
-            const year = new Date().getFullYear();
-            const start = new Date(year, 11, 1); // Dec 1
-            const startDay = start.getDay(); // 0=Sun..6=Sat
-            const leading = (startDay + 6) % 7; // shift so Mon=0
-            const totalCells = leading + 25;
-            const rows = Math.ceil(totalCells / 7);
-            const cells: (number | null)[] = Array.from(
-              { length: totalCells },
-              (_, i) => {
-                const day = i - leading + 1;
-                return day >= 1 && day <= 25 ? day : null;
-              }
-            );
-            while (cells.length % 7 !== 0) cells.push(null);
-
-            const weeks: (number | null)[][] = [];
-            for (let r = 0; r < rows; r++) {
-              weeks.push(cells.slice(r * 7, r * 7 + 7));
-            }
-
-            return weeks.map((week, wi) => (
-              <div key={wi} className='grid grid-cols-7 gap-4'>
-                {week.map((day, di) => (
-                  <div
-                    key={`${wi}-${di}`}
-                    className='flex items-center justify-center'
-                  >
-                    {day ? (
-                      renderCalendarCard(day, day - 1, showAnimation)
-                    ) : (
-                      <div className='size-32 border border-transparent' />
-                    )}
-                  </div>
-                ))}
-              </div>
-            ));
-          })()}
+          {renderWeeks()}
         </div>
       </div>
     </div>

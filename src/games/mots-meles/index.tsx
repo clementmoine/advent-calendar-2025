@@ -63,6 +63,9 @@ const MotsMeles = ({ onWin, gameData }: GameProps) => {
   const [lastSelected, setLastSelected] = useState<Position | null>(null);
   const [foundWords, setFoundWords] = useState<Set<string>>(new Set());
   const [gameWon, setGameWon] = useState(false);
+  const [invalidSelection, setInvalidSelection] = useState<Set<string>>(
+    new Set()
+  );
   const gridRef = useRef<HTMLDivElement>(null);
 
   // Generate the grid while reserving the daily word letters
@@ -590,10 +593,16 @@ const MotsMeles = ({ onWin, gameData }: GameProps) => {
   // Check whether a selection corresponds to a placed word
   const checkSelection = useCallback(
     (cells: Set<string>) => {
-      if (cells.size === 0) return;
+      if (cells.size === 0) {
+        setInvalidSelection(new Set());
+        return;
+      }
 
       const positions = Array.from(cells).map(getPositionFromKey);
-      if (positions.length === 0) return;
+      if (positions.length === 0) {
+        setInvalidSelection(new Set());
+        return;
+      }
 
       // Sort positions to verify in both directions
       const sortedPositions = [...positions].sort((a, b) => {
@@ -638,9 +647,18 @@ const MotsMeles = ({ onWin, gameData }: GameProps) => {
         if (matches(sortedPositions, placement.positions)) {
           setFoundWords(prev => new Set(prev).add(placement.word));
           setSelectedCells(new Set());
+          setInvalidSelection(new Set());
           return;
         }
       }
+
+      // If no match found, mark as invalid
+      setInvalidSelection(new Set(cells));
+      // Clear after a delay
+      setTimeout(() => {
+        setInvalidSelection(new Set());
+        setSelectedCells(new Set());
+      }, 600);
     },
     [wordPlacements, foundWords]
   );
@@ -651,6 +669,7 @@ const MotsMeles = ({ onWin, gameData }: GameProps) => {
     const key = getPositionKey({ row, col });
     setSelectedCells(new Set([key]));
     setLastSelected({ row, col });
+    setInvalidSelection(new Set()); // Clear invalid state on new selection
   };
 
   // Handle hover during selection
@@ -798,9 +817,9 @@ const MotsMeles = ({ onWin, gameData }: GameProps) => {
   };
 
   return (
-    <div className='flex max-w-4xl mx-auto flex-row gap-4 items-center justify-center'>
+    <div className='flex max-w-4xl mx-auto gap-4 items-center justify-center  md:flex-row flex-col'>
       {/* Game grid */}
-      <div className='flex flex-col gap-2'>
+      <div className='flex gap-2 md:flex-col flex-row flex-wrap justify-center'>
         {wordsToFind.map(word => {
           const isFound = foundWords.has(word);
           return (
@@ -846,6 +865,7 @@ const MotsMeles = ({ onWin, gameData }: GameProps) => {
                   const cellIsSelected = isSelected(rowIndex, colIndex);
                   const cellIsFound = isInFoundWord(rowIndex, colIndex);
                   const cellIsReserved = isReservedCell(rowIndex, colIndex);
+                  const cellIsInvalid = invalidSelection.has(cellKey);
                   // Highlight daily-word letters only after victory
                   const shouldHighlightReserved = gameWon && cellIsReserved;
 
@@ -861,9 +881,13 @@ const MotsMeles = ({ onWin, gameData }: GameProps) => {
                             ? 'bg-amber-400 dark:bg-amber-500 text-amber-900 dark:text-amber-100 ring-2 ring-amber-500 dark:ring-amber-400 shadow-lg'
                             : cellIsFound
                               ? 'bg-emerald-500 text-white'
-                              : cellIsSelected
-                                ? 'bg-emerald-600 text-white'
-                                : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-slate-100'
+                              : cellIsInvalid
+                                ? 'bg-red-500 text-white'
+                                : cellIsSelected && isSelecting
+                                  ? 'bg-blue-500 text-white'
+                                  : cellIsSelected
+                                    ? 'bg-emerald-600 text-white'
+                                    : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-slate-100'
                         }
                       `}
                       animate={

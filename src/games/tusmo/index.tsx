@@ -82,17 +82,58 @@ const TusmoGame = memo(function TusmoGame({
     setT9Suggestions([]);
   }, [currentGuess, wordLength]);
 
-  const getLetterColor = useCallback(
-    (letter: string, position: number) => {
-      if (targetWord[position] === letter) {
-        return TUSMO_COLORS.correct;
-      } else if (targetWord.includes(letter)) {
-        return TUSMO_COLORS.present;
-      } else {
-        return TUSMO_COLORS.absent;
+  // Calculate letter colors for a guess, accounting for letter frequency
+  const calculateLetterColors = useCallback(
+    (guess: string): string[] => {
+      const colors: string[] = new Array(guess.length).fill(
+        TUSMO_COLORS.absent
+      );
+      const targetChars = targetWord.split('');
+      const guessChars = guess.split('');
+
+      // Step 1: Mark all correct positions first
+      const usedInTarget = new Set<number>();
+      const usedInGuess = new Set<number>();
+
+      for (let i = 0; i < guessChars.length; i++) {
+        if (targetChars[i] === guessChars[i]) {
+          colors[i] = TUSMO_COLORS.correct;
+          usedInTarget.add(i);
+          usedInGuess.add(i);
+        }
       }
+
+      // Step 2: Count available occurrences in target (excluding correct ones)
+      const availableCounts: Record<string, number> = {};
+      targetChars.forEach((char, index) => {
+        if (!usedInTarget.has(index)) {
+          availableCounts[char] = (availableCounts[char] || 0) + 1;
+        }
+      });
+
+      // Step 3: Mark present letters (yellow) for remaining positions
+      for (let i = 0; i < guessChars.length; i++) {
+        if (!usedInGuess.has(i)) {
+          const letter = guessChars[i];
+          if (availableCounts[letter] > 0) {
+            colors[i] = TUSMO_COLORS.present;
+            availableCounts[letter]--;
+          }
+        }
+      }
+
+      return colors;
     },
     [targetWord]
+  );
+
+  const getLetterColor = useCallback(
+    (letter: string, position: number, guess: string) => {
+      // Use the calculated colors for the full guess
+      const colors = calculateLetterColors(guess);
+      return colors[position] || TUSMO_COLORS.absent;
+    },
+    [calculateLetterColors]
   );
 
   const handleSubmit = useCallback(() => {
@@ -107,8 +148,9 @@ const TusmoGame = memo(function TusmoGame({
 
     // Update keyboard state
     const newKeyboardState = { ...keyboardState };
+    const colors = calculateLetterColors(currentGuess);
     currentGuess.split('').forEach((letter, index) => {
-      const color = getLetterColor(letter, index);
+      const color = colors[index];
       if (color === TUSMO_COLORS.correct) {
         newKeyboardState[letter] = 'correct';
       } else if (
@@ -145,7 +187,7 @@ const TusmoGame = memo(function TusmoGame({
     targetWord,
     onWin,
     onLose,
-    getLetterColor,
+    calculateLetterColors,
   ]);
 
   const getKeyboardKeyColor = useCallback(
@@ -333,15 +375,13 @@ const TusmoGame = memo(function TusmoGame({
 
   const renderGuess = useCallback(
     (guess: string, index: number) => {
+      const colors = calculateLetterColors(guess);
       return (
         <div key={index} className='flex gap-2 mb-2'>
           {guess.split('').map((letter, letterIndex) => (
             <div
               key={letterIndex}
-              className={`w-12 h-12 flex items-center justify-center font-bold rounded text-lg ${getLetterColor(
-                letter,
-                letterIndex
-              )}`}
+              className={`w-12 h-12 flex items-center justify-center font-bold rounded text-lg ${colors[letterIndex] || TUSMO_COLORS.absent}`}
             >
               {letter}
             </div>
@@ -349,7 +389,7 @@ const TusmoGame = memo(function TusmoGame({
         </div>
       );
     },
-    [getLetterColor]
+    [calculateLetterColors]
   );
 
   const renderCurrentGuess = useCallback(() => {

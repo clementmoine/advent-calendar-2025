@@ -82,6 +82,7 @@ export default function FlappyBird({ onWin, onLose, onClose }: FlappyProps) {
   const [showHitbox, setShowHitbox] = useState(false);
   const [impact, setImpact] = useState<{ x: number; y: number } | null>(null);
   const impactRecordedRef = useRef(false);
+  const rewardGivenRef = useRef(false);
 
   const spawnCloud = useCallback(
     (fromRight = false) => {
@@ -124,6 +125,7 @@ export default function FlappyBird({ onWin, onLose, onClose }: FlappyProps) {
     setTimeout(() => containerRef.current?.focus(), 0);
     impactRecordedRef.current = false;
     setImpact(null);
+    rewardGivenRef.current = false;
   }, [spawnCloud, containerHeight]);
 
   const jump = useCallback(() => {
@@ -345,8 +347,12 @@ export default function FlappyBird({ onWin, onLose, onClose }: FlappyProps) {
                 scoredIdsRef.current.add(p.id);
                 p.scored = true;
                 setScore(s => s + 1);
-                // Defer coin award to avoid setState during render of another component
-                setTimeout(() => onWin(), 0);
+                // Award reward only once per game (after first pipe)
+                if (!rewardGivenRef.current && scoredIdsRef.current.size >= 1) {
+                  rewardGivenRef.current = true;
+                  // Defer coin award to avoid setState during render of another component
+                  setTimeout(() => onWin(), 0);
+                }
               }
             }
           });
@@ -452,8 +458,9 @@ export default function FlappyBird({ onWin, onLose, onClose }: FlappyProps) {
     <Dialog open={true} onOpenChange={open => !open && onClose()}>
       <DialogContent className='max-w-md'>
         <DialogHeader>
-          <DialogTitle className='text-xl font-semibold text-slate-900 dark:text-slate-100'>
-            🐦 Flappy Bird
+          <DialogTitle className='text-xl font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2'>
+            <span>🐦</span>
+            <span>Flappy Bird</span>
           </DialogTitle>
           <p className='text-slate-600 dark:text-slate-300 text-sm'>
             Gagnez 1 pièce par tuyau franchi.
@@ -464,7 +471,7 @@ export default function FlappyBird({ onWin, onLose, onClose }: FlappyProps) {
           <div ref={wrapperRef} className='w-full h-[60vh]'>
             <div
               ref={containerRef}
-              className='relative overflow-hidden rounded-lg border border-slate-300 dark:border-slate-600 bg-gradient-to-b from-sky-300 to-sky-200 dark:from-slate-900 dark:to-slate-800'
+              className='relative overflow-hidden rounded-lg border-2 border-slate-200 dark:border-slate-700 bg-gradient-to-b from-sky-200 via-sky-100 to-emerald-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-800 shadow-lg'
               style={{ width: '100%', height: '100%' }}
               role='application'
               aria-label='Flappy Bird'
@@ -483,12 +490,12 @@ export default function FlappyBird({ onWin, onLose, onClose }: FlappyProps) {
                 }
               }}
             >
-              {/* Light-mode top vignette to reduce brightness */}
+              {/* Light-mode sky gradient overlay */}
               <div
                 className='absolute inset-0 pointer-events-none dark:hidden'
                 style={{
                   background:
-                    'linear-gradient(to bottom, rgba(30,64,175,0.20) 0%, rgba(30,64,175,0.12) 25%, rgba(0,0,0,0) 55%)',
+                    'linear-gradient(to bottom, rgba(59,130,246,0.15) 0%, rgba(59,130,246,0.08) 30%, rgba(0,0,0,0) 60%)',
                 }}
                 aria-hidden='true'
               />
@@ -497,17 +504,17 @@ export default function FlappyBird({ onWin, onLose, onClose }: FlappyProps) {
                 className='absolute inset-0 pointer-events-none hidden dark:block'
                 style={{
                   backgroundImage:
-                    'radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,0.5) 50%, transparent 51%), radial-gradient(1.5px 1.5px at 60% 20%, rgba(255,255,255,0.45) 50%, transparent 51%), radial-gradient(1.5px 1.5px at 80% 60%, rgba(255,255,255,0.4) 50%, transparent 51%), radial-gradient(2px 2px at 35% 70%, rgba(255,255,255,0.5) 50%, transparent 51%)',
+                    'radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,0.6) 50%, transparent 51%), radial-gradient(1.5px 1.5px at 60% 20%, rgba(255,255,255,0.55) 50%, transparent 51%), radial-gradient(1.5px 1.5px at 80% 60%, rgba(255,255,255,0.5) 50%, transparent 51%), radial-gradient(2px 2px at 35% 70%, rgba(255,255,255,0.6) 50%, transparent 51%)',
                 }}
                 aria-hidden='true'
               />
               {/* Ground */}
               <div
-                className='absolute left-0 right-0 bg-green-300 dark:bg-green-800 border-t-2 border-green-500 dark:border-green-900'
+                className='absolute left-0 right-0 bg-emerald-400 dark:bg-emerald-700 border-t-2 border-emerald-500 dark:border-emerald-600 shadow-[0_-2px_8px_rgba(0,0,0,0.1)]'
                 style={{ height: containerHeight * 0.04, bottom: 0 }}
               >
                 {/* subtle grass highlight */}
-                <div className='pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-white/20 dark:bg-white/10' />
+                <div className='pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-white/30 dark:bg-white/15' />
               </div>
 
               {/* Clouds (parallax) */}
@@ -530,7 +537,7 @@ export default function FlappyBird({ onWin, onLose, onClose }: FlappyProps) {
 
               {/* Bird */}
               <div
-                className='absolute z-50 rounded-full bg-yellow-400 border-2 border-amber-500 shadow'
+                className='absolute z-50'
                 style={{
                   left: containerWidth * BIRD_X_RATIO,
                   top: birdY,
@@ -538,9 +545,19 @@ export default function FlappyBird({ onWin, onLose, onClose }: FlappyProps) {
                   height: containerHeight * BIRD_RADIUS_RATIO * 2,
                   marginLeft: -containerHeight * BIRD_RADIUS_RATIO,
                   marginTop: -containerHeight * BIRD_RADIUS_RATIO,
+                  transition: 'transform 0.1s ease-out',
+                  transform: `rotate(${velocity > 0 ? Math.min(30, velocity * 3) : Math.max(-15, velocity * 2)}deg)`,
                 }}
                 aria-label='Oiseau'
-              />
+              >
+                <div
+                  className='absolute rounded-full bg-amber-400 dark:bg-amber-500 border-2 border-amber-600 dark:border-amber-700 shadow-lg drop-shadow-md'
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                  }}
+                />
+              </div>
 
               {/* Pipes */}
               {pipes.map((p, idx) => (
@@ -554,7 +571,7 @@ export default function FlappyBird({ onWin, onLose, onClose }: FlappyProps) {
                   aria-hidden='true'
                 >
                   <div
-                    className='relative bg-emerald-400 dark:bg-emerald-700 border-l-2 border-r-2 border-t-0 border-b-0 border-l-emerald-700 border-r-emerald-700 dark:border-l-emerald-800 dark:border-r-emerald-800'
+                    className='relative bg-emerald-500 dark:bg-emerald-600 border-l-2 border-r-2 border-t-0 border-b-0 border-l-emerald-600 border-r-emerald-600 dark:border-l-emerald-700 dark:border-r-emerald-700 shadow-[inset_-2px_0_4px_rgba(0,0,0,0.1)]'
                     style={{
                       height: p.gapTop,
                       width: containerWidth * PIPE_WIDTH_RATIO,
@@ -565,19 +582,17 @@ export default function FlappyBird({ onWin, onLose, onClose }: FlappyProps) {
                       className='pointer-events-none absolute inset-y-0 left-0'
                       style={{
                         width: '35%',
-                        background: 'rgba(255,255,255,0.14)',
+                        background: 'rgba(255,255,255,0.2)',
                         mixBlendMode: 'overlay',
                       }}
                     />
                     {/* Dark edge on non-lit side */}
-                    <div className='pointer-events-none absolute inset-y-0 right-0 w-[3px] bg-black/15 dark:bg-black/40' />
+                    <div className='pointer-events-none absolute inset-y-0 right-0 w-[3px] bg-black/20 dark:bg-black/50' />
                     {/* Pipe number (top) */}
                     <div
-                      className='absolute bottom-4 left-1/2 -translate-x-1/2 text-emerald-700 text-md font-extrabold select-none'
+                      className='absolute bottom-4 left-1/2 -translate-x-1/2 text-emerald-50 dark:text-emerald-100 text-md font-extrabold select-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]'
                       style={{
                         lineHeight: 1,
-                        textShadow:
-                          '0 1px 0 rgba(0,0,0,0.45), 0 -1px 0 rgba(255,255,255,0.25)',
                         opacity: 0.95,
                       }}
                     >
@@ -586,7 +601,7 @@ export default function FlappyBird({ onWin, onLose, onClose }: FlappyProps) {
                   </div>
                   {/* Top pipe cap */}
                   <div
-                    className='absolute bg-emerald-500 dark:bg-emerald-800 border-2 border-emerald-700 dark:border-emerald-900'
+                    className='absolute bg-emerald-600 dark:bg-emerald-700 border-2 border-emerald-700 dark:border-emerald-800 shadow-md'
                     style={{
                       height: 10,
                       width: containerWidth * PIPE_WIDTH_RATIO + 8,
@@ -595,7 +610,7 @@ export default function FlappyBird({ onWin, onLose, onClose }: FlappyProps) {
                     }}
                   />
                   <div
-                    className='relative bg-emerald-400 dark:bg-emerald-700 border-l-2 border-r-2 border-t-0 border-b-0 border-l-emerald-700 border-r-emerald-700 dark:border-l-emerald-800 dark:border-r-emerald-800'
+                    className='relative bg-emerald-500 dark:bg-emerald-600 border-l-2 border-r-2 border-t-0 border-b-0 border-l-emerald-600 border-r-emerald-600 dark:border-l-emerald-700 dark:border-r-emerald-700 shadow-[inset_-2px_0_4px_rgba(0,0,0,0.1)]'
                     style={{
                       height:
                         containerHeight -
@@ -612,19 +627,17 @@ export default function FlappyBird({ onWin, onLose, onClose }: FlappyProps) {
                       className='pointer-events-none absolute inset-y-0 left-0'
                       style={{
                         width: '35%',
-                        background: 'rgba(255,255,255,0.14)',
+                        background: 'rgba(255,255,255,0.2)',
                         mixBlendMode: 'overlay',
                       }}
                     />
                     {/* Dark edge on non-lit side */}
-                    <div className='pointer-events-none absolute inset-y-0 right-0 w-[3px] bg-black/15 dark:bg-black/40' />
+                    <div className='pointer-events-none absolute inset-y-0 right-0 w-[3px] bg-black/20 dark:bg-black/50' />
                     {/* Pipe number (bottom) */}
                     <div
-                      className='absolute top-4 left-1/2 -translate-x-1/2 text-emerald-700 text-md font-extrabold select-none'
+                      className='absolute top-4 left-1/2 -translate-x-1/2 text-emerald-50 dark:text-emerald-100 text-md font-extrabold select-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]'
                       style={{
                         lineHeight: 1,
-                        textShadow:
-                          '0 1px 0 rgba(0,0,0,0.45), 0 -1px 0 rgba(255,255,255,0.25)',
                         opacity: 0.95,
                       }}
                     >
@@ -633,7 +646,7 @@ export default function FlappyBird({ onWin, onLose, onClose }: FlappyProps) {
                   </div>
                   {/* Bottom pipe cap */}
                   <div
-                    className='absolute bg-emerald-500 dark:bg-emerald-800 border-2 border-emerald-700 dark:border-emerald-900'
+                    className='absolute bg-emerald-600 dark:bg-emerald-700 border-2 border-emerald-700 dark:border-emerald-800 shadow-md'
                     style={{
                       height: 10,
                       width: containerWidth * PIPE_WIDTH_RATIO + 8,

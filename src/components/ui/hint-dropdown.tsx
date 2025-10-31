@@ -53,12 +53,13 @@ export default function HintDropdown({ options, disabled }: HintDropdownProps) {
       <DropdownMenuTrigger asChild>
         <Button
           variant='outline'
+          size='sm'
           title={`Aides (${coins} pièces)`}
           disabled={disabled}
           className='flex items-center gap-2 border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-800 dark:text-amber-300 dark:bg-amber-900/20 dark:border-amber-800'
         >
           <HelpCircle className='size-4' />
-          <span>Besoin d&apos;aide</span>
+          <span className='hidden md:block'>Besoin d&apos;aide</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent key={version} align='end' sideOffset={8}>

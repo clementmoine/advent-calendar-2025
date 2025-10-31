@@ -393,6 +393,7 @@ export default function Tetris({ onWin, onLose, onClose }: TetrisProps) {
   // Track last move type to detect T-spins (rotation -> lock)
   const lastActionWasRotationRef = useRef(false);
   const backToBackRef = useRef(false);
+  const rewardGivenRef = useRef(false);
 
   // stable refs for callbacks
   const onWinRef = useRef(onWin);
@@ -503,10 +504,13 @@ export default function Tetris({ onWin, onLose, onClose }: TetrisProps) {
 
         setScore(s => s + points);
         setLinesCleared(l => l + lines);
-        // Award 1 coin per cleared line (defer to next tick)
-        setTimeout(() => {
-          for (let i = 0; i < lines; i++) onWinRef.current();
-        }, 0);
+        // Award reward only once per game (after first line cleared)
+        if (!rewardGivenRef.current && lines > 0) {
+          rewardGivenRef.current = true;
+          setTimeout(() => {
+            onWinRef.current();
+          }, 0);
+        }
       }
 
       return {
@@ -538,6 +542,7 @@ export default function Tetris({ onWin, onLose, onClose }: TetrisProps) {
     backToBackRef.current = false;
     lastActionWasRotationRef.current = false;
     onGroundRef.current = false;
+    rewardGivenRef.current = false;
     if (lockTimerRef.current) {
       clearTimeout(lockTimerRef.current);
       lockTimerRef.current = null;
