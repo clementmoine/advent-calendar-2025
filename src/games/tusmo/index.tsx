@@ -195,12 +195,86 @@ const TusmoGame = memo(function TusmoGame({
       gameElement.addEventListener('debug-win', handleDebugWin);
       gameElement.addEventListener('debug-gameover', handleDebugGameOver);
 
+      // Hints: reveal letters
+      const markKeyboard = (
+        letter: string,
+        state: 'correct' | 'present' | 'absent'
+      ) => {
+        setKeyboardState(prev => {
+          const next = { ...prev } as Record<string, string>;
+          const L = letter.toUpperCase();
+          if (state === 'correct') next[L] = 'correct';
+          else if (state === 'present') {
+            if (next[L] !== 'correct') next[L] = 'present';
+          } else if (state === 'absent') {
+            if (!next[L]) next[L] = 'absent';
+          }
+          return next;
+        });
+      };
+
+      // (indice "mal placée" retiré)
+
+      const revealAbsent = () => {
+        if (gameOver) return;
+        const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const targetSet = new Set(targetWord.split(''));
+        // Also avoid letters already hinted/marked on the keyboard
+        const markedSet = new Set(Object.keys(keyboardState));
+        const pool = alphabet
+          .split('')
+          .map(ch => ch as string)
+          .filter(ch => !targetSet.has(ch) && !markedSet.has(ch));
+        if (pool.length === 0) return;
+        const absent = pool[Math.floor(Math.random() * pool.length)];
+        // Only reflect on the keyboard, do not modify current guess
+        markKeyboard(absent, 'absent');
+        setIsCurrentWordInvalid(false);
+        setT9Suggestions([]);
+      };
+
+      gameElement.addEventListener('tusmo-hint-absent', revealAbsent);
+
+      const handleQueryAvailable = (evt: Event) => {
+        const e = evt as CustomEvent<{
+          type: 'absent' | 'present' | 'correct';
+          available?: boolean;
+        }>;
+        if (!e.detail) return;
+        if (e.detail.type === 'absent') {
+          const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+          const targetSet = new Set(targetWord.split(''));
+          const markedSet = new Set(Object.keys(keyboardState));
+          const available = alphabet
+            .split('')
+            .some(ch => !targetSet.has(ch) && !markedSet.has(ch));
+          e.detail.available = available;
+        }
+      };
+      gameElement.addEventListener(
+        'tusmo-query-available',
+        handleQueryAvailable
+      );
+
       return () => {
         gameElement.removeEventListener('debug-win', handleDebugWin);
         gameElement.removeEventListener('debug-gameover', handleDebugGameOver);
+        gameElement.removeEventListener('tusmo-hint-absent', revealAbsent);
+        gameElement.removeEventListener(
+          'tusmo-query-available',
+          handleQueryAvailable
+        );
       };
     }
-  }, [gameOver, onWin, onLose]);
+  }, [
+    gameOver,
+    onWin,
+    onLose,
+    currentGuess,
+    keyboardState,
+    wordLength,
+    targetWord,
+  ]);
 
   // Physical keyboard handling
   useEffect(() => {
@@ -288,6 +362,7 @@ const TusmoGame = memo(function TusmoGame({
         }
       });
     });
+    // (plus de lettres fixées par hint "bien placée" – option retirée)
 
     return (
       <div className='flex gap-2 mb-2'>
@@ -299,18 +374,28 @@ const TusmoGame = memo(function TusmoGame({
           const shouldShowRed =
             isCurrentWordInvalid && currentGuess.length === wordLength;
 
+          // Considérée correcte uniquement si validée par un essai précédent
+          // ou si révélée par un indice (gérée ailleurs) – pas juste en tapant
+
+          let classes =
+            'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100';
+          if (shouldShowRed) {
+            classes =
+              'border-red-500 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200';
+          } else if (currentLetter) {
+            // Pendant la saisie: toujours bleu pour clarté
+            classes =
+              'border-blue-500 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200';
+          } else if (correctLetter) {
+            // En dehors de la saisie: montrer les lettres validées/révélées en vert
+            classes =
+              'border-emerald-500 bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200';
+          }
+
           return (
             <div
               key={letterIndex}
-              className={`w-12 h-12 flex items-center justify-center border-2 rounded text-lg font-bold ${
-                shouldShowRed
-                  ? 'border-red-500 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200'
-                  : currentLetter
-                    ? 'border-emerald-500 bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200'
-                    : correctLetter
-                      ? 'border-emerald-500 bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200'
-                      : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100'
-              }`}
+              className={`w-12 h-12 flex items-center justify-center border-2 rounded text-lg font-bold ${classes}`}
             >
               {currentLetter || correctLetter || ''}
             </div>

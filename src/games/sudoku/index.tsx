@@ -161,6 +161,20 @@ const SudokuGame = memo(function SudokuGame({
     [initialGrid]
   );
 
+  // Check grid matches solution exactly
+  const isGridSolved = useCallback(
+    (currentGrid: number[][]) => {
+      if (!sudokuData) return false;
+      for (let r = 0; r < 9; r++) {
+        for (let c = 0; c < 9; c++) {
+          if (currentGrid[r][c] !== sudokuData.solution[r][c]) return false;
+        }
+      }
+      return true;
+    },
+    [sudokuData]
+  );
+
   // Check whether a cell is in conflict
   const isCellInConflict = (row: number, col: number) => {
     const cellValue = grid[row][col];
@@ -209,14 +223,14 @@ const SudokuGame = memo(function SudokuGame({
       newGrid[selectedCell.row][selectedCell.col] = num;
       setSudokuData({ ...sudokuData, grid: newGrid });
 
-      // Check whether the grid is complete
-      if (isGridComplete(newGrid)) {
+      // Check whether the grid is complete and correct
+      if (isGridComplete(newGrid) && isGridSolved(newGrid)) {
         setWon(true);
         setGameOver(true);
         onWin?.();
       }
     },
-    [selectedCell, gameOver, sudokuData, grid, onWin]
+    [selectedCell, gameOver, sudokuData, grid, onWin, isGridSolved]
   );
 
   const handleClearCell = useCallback(() => {
@@ -265,6 +279,50 @@ const SudokuGame = memo(function SudokuGame({
       };
     }
   }, [gameOver, onWin, onLose]);
+
+  // Hint: play next correct move from the solution
+  useEffect(() => {
+    const el = document.querySelector('[data-game-component]');
+    if (!el) return;
+    const handleAuto = () => {
+      if (gameOver || !sudokuData) return;
+      // Pick a random empty cell and fill with solution
+      const empties: { r: number; c: number }[] = [];
+      for (let r = 0; r < 9; r++) {
+        for (let c = 0; c < 9; c++) {
+          if (sudokuData.grid[r][c] === 0) empties.push({ r, c });
+        }
+      }
+      if (empties.length === 0) return;
+      const { r, c } = empties[Math.floor(Math.random() * empties.length)];
+      const val = sudokuData.solution[r][c];
+      const newGrid = sudokuData.grid.map(row => [...row]);
+      newGrid[r][c] = val;
+      // Apply update
+      setSudokuData({ ...sudokuData, grid: newGrid });
+      // If this solves the grid, trigger win immediately
+      if (isGridComplete(newGrid) && isGridSolved(newGrid)) {
+        setWon(true);
+        setGameOver(true);
+        onWin?.();
+      }
+    };
+    const handleQuery = (evt: Event) => {
+      const e = evt as CustomEvent<{ type: 'auto'; available?: boolean }>;
+      if (!e.detail || e.detail.type !== 'auto') return;
+      const available =
+        !!sudokuData &&
+        sudokuData.grid.some(row => row.includes(0)) &&
+        !gameOver;
+      e.detail.available = available;
+    };
+    el.addEventListener('sudoku-auto-move', handleAuto);
+    el.addEventListener('sudoku-query-available', handleQuery);
+    return () => {
+      el.removeEventListener('sudoku-auto-move', handleAuto);
+      el.removeEventListener('sudoku-query-available', handleQuery);
+    };
+  }, [sudokuData, gameOver, isGridSolved, onWin]);
 
   // Gestion des touches clavier physique
   useEffect(() => {

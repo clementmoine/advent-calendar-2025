@@ -24,6 +24,8 @@ import { useGameProgress } from '@/hooks/useGameProgress';
 import RestartButton from '@/components/ui/restart-button';
 import GameEndModal from '@/components/game-end-modal';
 import type { ComponentType } from 'react';
+import HintDropdown from '@/components/ui/hint-dropdown';
+import { usePiggyBank } from '@/contexts/piggy-bank-context';
 
 interface GameViewerProps {
   gameId: string;
@@ -101,6 +103,97 @@ const GameViewer = memo(function GameViewer({
   }, [gameId]);
 
   const { completeDay } = useGameProgress();
+  usePiggyBank();
+  type TusmoQueryDetail = {
+    type: 'absent' | 'present' | 'correct';
+    available: boolean;
+  };
+  const tusmoAvailable = useCallback(
+    (kind: 'absent' | 'present' | 'correct') => {
+      if (typeof window === 'undefined' || typeof document === 'undefined') {
+        return false;
+      }
+      const el = document.querySelector('[data-game-component]');
+      if (!el) return false;
+      const detail: TusmoQueryDetail = { type: kind, available: false };
+      el.dispatchEvent(
+        new CustomEvent<TusmoQueryDetail>('tusmo-query-available', {
+          detail,
+          bubbles: true,
+        })
+      );
+      return Boolean(detail.available);
+    },
+    []
+  );
+
+  type G2048QueryDetail = { type: 'undo' | 'auto'; available: boolean };
+  const game2048Available = useCallback((kind: 'undo' | 'auto') => {
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return false;
+    }
+    const el = document.querySelector('[data-game-component]');
+    if (!el) return false;
+    const detail: G2048QueryDetail = { type: kind, available: false };
+    el.dispatchEvent(
+      new CustomEvent<G2048QueryDetail>('2048-query-available', {
+        detail,
+        bubbles: true,
+      })
+    );
+    return Boolean(detail.available);
+  }, []);
+
+  type LightsOutQueryDetail = { type: 'auto'; available: boolean };
+  const lightsOutAvailable = useCallback((kind: 'auto') => {
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return false;
+    }
+    const el = document.querySelector('[data-game-component]');
+    if (!el) return false;
+    const detail: LightsOutQueryDetail = { type: kind, available: false };
+    el.dispatchEvent(
+      new CustomEvent<LightsOutQueryDetail>('lightsout-query-available', {
+        detail,
+        bubbles: true,
+      })
+    );
+    return Boolean(detail.available);
+  }, []);
+
+  type MotsMelesQueryDetail = { type: 'reveal'; available: boolean };
+  const motsMelesAvailable = useCallback((kind: 'reveal') => {
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return false;
+    }
+    const el = document.querySelector('[data-game-component]');
+    if (!el) return false;
+    const detail: MotsMelesQueryDetail = { type: kind, available: false };
+    el.dispatchEvent(
+      new CustomEvent<MotsMelesQueryDetail>('motsmeles-query-available', {
+        detail,
+        bubbles: true,
+      })
+    );
+    return Boolean(detail.available);
+  }, []);
+
+  type SudokuQueryDetail = { type: 'auto'; available: boolean };
+  const sudokuAvailable = useCallback((kind: 'auto') => {
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return false;
+    }
+    const el = document.querySelector('[data-game-component]');
+    if (!el) return false;
+    const detail: SudokuQueryDetail = { type: kind, available: false };
+    el.dispatchEvent(
+      new CustomEvent<SudokuQueryDetail>('sudoku-query-available', {
+        detail,
+        bubbles: true,
+      })
+    );
+    return Boolean(detail.available);
+  }, []);
 
   // Win callback
   const handleWin = useCallback(() => {
@@ -248,6 +341,126 @@ const GameViewer = memo(function GameViewer({
 
         {/* Action Buttons */}
         <div className='flex items-center gap-2'>
+          {/* Hints dropdown */}
+          {gameData && (
+            <HintDropdown
+              disabled={isLoading || isModalOpen}
+              options={[
+                {
+                  id: 'solve',
+                  label: 'Résoudre le jeu',
+                  cost: 200,
+                  action: () => {
+                    const el = document.querySelector('[data-game-component]');
+                    if (el) {
+                      el.dispatchEvent(
+                        new Event('debug-win', { bubbles: true })
+                      );
+                    }
+                    // Fallback: resolve at viewer level
+                    handleWin();
+                  },
+                },
+                ...(gameId === 'tusmo'
+                  ? [
+                      {
+                        id: 'tusmo-absent',
+                        label: 'Dévoiler une lettre absente',
+                        cost: 10,
+                        can: () => tusmoAvailable('absent'),
+                        disabled: !tusmoAvailable('absent'),
+                        action: () => {
+                          const el = document.querySelector(
+                            '[data-game-component]'
+                          );
+                          el?.dispatchEvent(
+                            new Event('tusmo-hint-absent', { bubbles: true })
+                          );
+                        },
+                      },
+                    ]
+                  : []),
+                ...(gameId === '2048'
+                  ? [
+                      {
+                        id: '2048-auto',
+                        label: 'Jouer le prochain coup',
+                        cost: 10,
+                        disabled: !game2048Available('auto'),
+                        can: () => game2048Available('auto'),
+                        action: () => {
+                          const el = document.querySelector(
+                            '[data-game-component]'
+                          );
+                          el?.dispatchEvent(
+                            new Event('2048-auto-move', { bubbles: true })
+                          );
+                        },
+                      },
+                    ]
+                  : []),
+                ...(gameId === 'sudoku'
+                  ? [
+                      {
+                        id: 'sudoku-auto',
+                        label: 'Dévoiler un chiffre',
+                        cost: 10,
+                        disabled: !sudokuAvailable('auto'),
+                        can: () => sudokuAvailable('auto'),
+                        action: () => {
+                          const el = document.querySelector(
+                            '[data-game-component]'
+                          );
+                          el?.dispatchEvent(
+                            new Event('sudoku-auto-move', { bubbles: true })
+                          );
+                        },
+                      },
+                    ]
+                  : []),
+                ...(gameId === 'lights-out'
+                  ? [
+                      {
+                        id: 'lightsout-auto',
+                        label: 'Jouer le prochain coup',
+                        cost: 10,
+                        disabled: !lightsOutAvailable('auto'),
+                        can: () => lightsOutAvailable('auto'),
+                        action: () => {
+                          const el = document.querySelector(
+                            '[data-game-component]'
+                          );
+                          el?.dispatchEvent(
+                            new Event('lightsout-auto-move', { bubbles: true })
+                          );
+                        },
+                      },
+                    ]
+                  : []),
+                ...(gameId === 'mots-meles'
+                  ? [
+                      {
+                        id: 'motsmeles-reveal',
+                        label: 'Dévoiler un mot',
+                        cost: 15,
+                        disabled: !motsMelesAvailable('reveal'),
+                        can: () => motsMelesAvailable('reveal'),
+                        action: () => {
+                          const el = document.querySelector(
+                            '[data-game-component]'
+                          );
+                          el?.dispatchEvent(
+                            new Event('motsmeles-reveal-word', {
+                              bubbles: true,
+                            })
+                          );
+                        },
+                      },
+                    ]
+                  : []),
+              ]}
+            />
+          )}
           {onReset && (
             <RestartButton
               onRestart={onReset}
@@ -266,7 +479,7 @@ const GameViewer = memo(function GameViewer({
                 <Info className='size-4' />
               </Button>
             </DialogTrigger>
-            <DialogContent className='max-w-2xl'>
+            <DialogContent className='max-w-2xl max-h-[80vh] overflow-y-auto'>
               <DialogHeader>
                 <DialogTitle className='text-center'>Règles du jeu</DialogTitle>
               </DialogHeader>
@@ -277,7 +490,7 @@ const GameViewer = memo(function GameViewer({
 
                 <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-6'>
                   <div className='text-center p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg'>
-                    <Target className='h-6 w-6 mx-auto mb-2 text-emerald-600 dark:text-emerald-400' />
+                    <Target className='size-6 mx-auto mb-2 text-emerald-600 dark:text-emerald-400' />
                     <p className='font-semibold text-slate-900 dark:text-slate-100'>
                       Difficulté
                     </p>
@@ -286,7 +499,7 @@ const GameViewer = memo(function GameViewer({
                     </p>
                   </div>
                   <div className='text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg'>
-                    <Clock className='h-6 w-6 mx-auto mb-2 text-green-600 dark:text-green-400' />
+                    <Clock className='size-6 mx-auto mb-2 text-green-600 dark:text-green-400' />
                     <p className='font-semibold text-slate-900 dark:text-slate-100'>
                       Durée
                     </p>
@@ -295,7 +508,7 @@ const GameViewer = memo(function GameViewer({
                     </p>
                   </div>
                   <div className='text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg'>
-                    <Trophy className='h-6 w-6 mx-auto mb-2 text-purple-600 dark:text-purple-400' />
+                    <Trophy className='size-6 mx-auto mb-2 text-purple-600 dark:text-purple-400' />
                     <p className='font-semibold text-slate-900 dark:text-slate-100'>
                       Objectif
                     </p>
@@ -331,6 +544,21 @@ const GameViewer = memo(function GameViewer({
                     </div>
                   </>
                 )}
+
+                <div className='space-y-2 mt-6 pt-6 border-t border-slate-200 dark:border-slate-700'>
+                  <h3 className='font-semibold text-slate-900 dark:text-slate-100'>
+                    💡 Besoin d&apos;aide ?
+                  </h3>
+                  <p className='text-sm text-slate-600 dark:text-slate-300'>
+                    Si vous êtes bloqué(e), utilisez le bouton{' '}
+                    <span className='font-semibold text-amber-600 dark:text-amber-400'>
+                      &quot;Besoin d&apos;aide&quot;
+                    </span>{' '}
+                    pour obtenir des indices en utilisant vos pièces de la
+                    tirelire. Vous pouvez gagner plus de pièces en jouant aux
+                    mini-jeux !
+                  </p>
+                </div>
               </div>
             </DialogContent>
           </Dialog>
@@ -344,7 +572,7 @@ const GameViewer = memo(function GameViewer({
             fallback={
               <div className='flex items-center justify-center h-96'>
                 <div className='text-center'>
-                  <div className='spinner h-12 w-12 border-emerald-600 mx-auto mb-4'></div>
+                  <div className='spinner size-12 border-emerald-600 mx-auto mb-4'></div>
                   <p className='text-slate-600 dark:text-slate-400'>
                     Chargement du jeu...
                   </p>
@@ -355,7 +583,7 @@ const GameViewer = memo(function GameViewer({
             {isLoading ? (
               <div className='flex items-center justify-center h-96'>
                 <div className='text-center'>
-                  <div className='spinner h-12 w-12 border-emerald-600 mx-auto mb-4'></div>
+                  <div className='spinner size-12 border-emerald-600 mx-auto mb-4'></div>
                   <p className='text-slate-600 dark:text-slate-400'>
                     Chargement du jeu...
                   </p>

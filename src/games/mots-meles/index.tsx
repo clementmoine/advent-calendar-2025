@@ -743,6 +743,38 @@ const MotsMeles = ({ onWin, gameData }: GameProps) => {
     }
   }, [foundWords.size, wordsToFind.length, onWin, gameWon]);
 
+  // Hint integration: reveal a word
+  const revealWord = useCallback(() => {
+    if (gameWon) return;
+    const unrevealed = wordPlacements.filter(wp => !foundWords.has(wp.word));
+    if (unrevealed.length === 0) return;
+    const randomPlacement =
+      unrevealed[Math.floor(Math.random() * unrevealed.length)];
+    // Simulate selecting all positions of this word
+    const cells = new Set(
+      randomPlacement.positions.map(p => getPositionKey(p))
+    );
+    checkSelection(cells);
+  }, [wordPlacements, foundWords, gameWon, checkSelection]);
+
+  useEffect(() => {
+    const el = document.querySelector('[data-game-component]');
+    if (!el) return;
+    const handleReveal = () => revealWord();
+    const handleQuery = (evt: Event) => {
+      const e = evt as CustomEvent<{ type: 'reveal'; available?: boolean }>;
+      if (!e.detail || e.detail.type !== 'reveal') return;
+      const unrevealed = wordPlacements.filter(wp => !foundWords.has(wp.word));
+      e.detail.available = unrevealed.length > 0 && !gameWon;
+    };
+    el.addEventListener('motsmeles-reveal-word', handleReveal);
+    el.addEventListener('motsmeles-query-available', handleQuery);
+    return () => {
+      el.removeEventListener('motsmeles-reveal-word', handleReveal);
+      el.removeEventListener('motsmeles-query-available', handleQuery);
+    };
+  }, [revealWord, wordPlacements, foundWords, gameWon]);
+
   // Check if a cell belongs to a found word
   const isInFoundWord = (row: number, col: number): boolean => {
     for (const placement of wordPlacements) {

@@ -67,7 +67,7 @@ export default function DevPage() {
     return (
       <div className='flex items-center justify-center min-h-screen'>
         <div className='text-center'>
-          <div className='spinner h-12 w-12 border-emerald-600 mx-auto mb-4'></div>
+          <div className='spinner size-12 border-emerald-600 mx-auto mb-4'></div>
           <p className='text-slate-600 dark:text-slate-400'>
             Chargement des jeux...
           </p>

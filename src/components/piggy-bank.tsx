@@ -169,7 +169,7 @@ export default function PiggyBank({ onClose }: PiggyBankProps) {
         {/* Content */}
         <div className='flex flex-col overflow-y-auto max-h-[calc(90vh-120px)] gap-4'>
           <div className='flex gap-4 items-center p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg'>
-            <Coins className='h-6 w-6 text-yellow-600 dark:text-yellow-400' />
+            <Coins className='size-6 text-yellow-600 dark:text-yellow-400' />
 
             <div className='flex flex-col'>
               <span className='text-xs text-yellow-700 dark:text-yellow-300'>
@@ -196,7 +196,7 @@ export default function PiggyBank({ onClose }: PiggyBankProps) {
                   <div className='flex items-start justify-between mb-4'>
                     <div className='text-4xl'>{game.icon}</div>
                     {!game.unlocked && (
-                      <Lock className='h-5 w-5 text-slate-400' />
+                      <Lock className='size-5 text-slate-400' />
                     )}
                   </div>
 
@@ -226,7 +226,7 @@ export default function PiggyBank({ onClose }: PiggyBankProps) {
                     </Badge>
 
                     <div className='flex items-center gap-1 text-yellow-600 dark:text-yellow-400'>
-                      <Coins className='h-4 w-4' />
+                      <Coins className='size-4' />
                       <span className='font-medium'>{game.reward}</span>
                     </div>
                   </div>
@@ -240,7 +240,7 @@ export default function PiggyBank({ onClose }: PiggyBankProps) {
                         playMiniGame(game.id);
                       }}
                     >
-                      <Play className='h-4 w-4 mr-2' />
+                      <Play className='size-4 mr-2' />
                       Jouer
                     </Button>
                   )}

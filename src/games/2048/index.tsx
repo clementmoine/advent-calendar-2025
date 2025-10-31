@@ -41,6 +41,7 @@ const Game2048 = memo(function Game2048({
     'qwerty'
   );
   const [pressedKeys, setPressedKeys] = useState<Set<string>>(new Set());
+  const [history, setHistory] = useState<number[][][]>([]);
 
   const config = GRID_CONFIG[difficulty];
   const target = config.target;
@@ -222,7 +223,7 @@ const Game2048 = memo(function Game2048({
   );
 
   // Move tiles left
-  const moveLeft = useCallback(
+  const computeMoveLeft = useCallback(
     (currentGrid: number[][]) => {
       const newGrid = currentGrid.map(row => [...row]);
       let moved = false;
@@ -230,7 +231,7 @@ const Game2048 = memo(function Game2048({
 
       for (let row = 0; row < config.size; row++) {
         const filteredRow = newGrid[row].filter(cell => cell !== 0);
-        const mergedRow = [];
+        const mergedRow: number[] = [];
         let i = 0;
 
         while (i < filteredRow.length) {
@@ -241,7 +242,6 @@ const Game2048 = memo(function Game2048({
             const mergedValue = filteredRow[i] * 2;
             mergedRow.push(mergedValue);
 
-            // Mark this tile as merged
             const colIndex = mergedRow.length - 1;
             newMergedTiles.add(`${row}-${colIndex}`);
 
@@ -262,21 +262,25 @@ const Game2048 = memo(function Game2048({
         newGrid[row] = mergedRow;
       }
 
-      // Animer les fusions
-      if (moved && newMergedTiles.size > 0) {
-        setMergedTiles(newMergedTiles);
-        setTimeout(() => {
-          setMergedTiles(new Set());
-        }, 200);
-      }
-
-      return { grid: newGrid, moved };
+      return { grid: newGrid, moved, mergedTiles: newMergedTiles };
     },
     [config.size]
   );
 
+  const moveLeft = useCallback(
+    (currentGrid: number[][]) => {
+      const res = computeMoveLeft(currentGrid);
+      if (res.moved && res.mergedTiles.size > 0) {
+        setMergedTiles(res.mergedTiles);
+        setTimeout(() => setMergedTiles(new Set()), 200);
+      }
+      return { grid: res.grid, moved: res.moved };
+    },
+    [computeMoveLeft]
+  );
+
   // Move tiles right
-  const moveRight = useCallback(
+  const computeMoveRight = useCallback(
     (currentGrid: number[][]) => {
       const newGrid = currentGrid.map(row => [...row]);
       let moved = false;
@@ -284,7 +288,7 @@ const Game2048 = memo(function Game2048({
 
       for (let row = 0; row < config.size; row++) {
         const filteredRow = newGrid[row].filter(cell => cell !== 0);
-        const mergedRow = [];
+        const mergedRow: number[] = [];
         let i = filteredRow.length - 1;
 
         while (i >= 0) {
@@ -292,7 +296,6 @@ const Game2048 = memo(function Game2048({
             const mergedValue = filteredRow[i] * 2;
             mergedRow.unshift(mergedValue);
 
-            // Mark this tile as merged
             const colIndex = config.size - mergedRow.length;
             newMergedTiles.add(`${row}-${colIndex}`);
 
@@ -313,35 +316,39 @@ const Game2048 = memo(function Game2048({
         newGrid[row] = mergedRow;
       }
 
-      // Animer les fusions
-      if (moved && newMergedTiles.size > 0) {
-        setMergedTiles(newMergedTiles);
-        setTimeout(() => {
-          setMergedTiles(new Set());
-        }, 200);
-      }
-
-      return { grid: newGrid, moved };
+      return { grid: newGrid, moved, mergedTiles: newMergedTiles };
     },
     [config.size]
   );
 
+  const moveRight = useCallback(
+    (currentGrid: number[][]) => {
+      const res = computeMoveRight(currentGrid);
+      if (res.moved && res.mergedTiles.size > 0) {
+        setMergedTiles(res.mergedTiles);
+        setTimeout(() => setMergedTiles(new Set()), 200);
+      }
+      return { grid: res.grid, moved: res.moved };
+    },
+    [computeMoveRight]
+  );
+
   // Move tiles up
-  const moveUp = useCallback(
+  const computeMoveUp = useCallback(
     (currentGrid: number[][]) => {
       const newGrid = currentGrid.map(row => [...row]);
       let moved = false;
       const newMergedTiles = new Set<string>();
 
       for (let col = 0; col < config.size; col++) {
-        const column = [];
+        const column: number[] = [];
         for (let row = 0; row < config.size; row++) {
           if (newGrid[row][col] !== 0) {
             column.push(newGrid[row][col]);
           }
         }
 
-        const mergedColumn = [];
+        const mergedColumn: number[] = [];
         let i = 0;
 
         while (i < column.length) {
@@ -349,7 +356,6 @@ const Game2048 = memo(function Game2048({
             const mergedValue = column[i] * 2;
             mergedColumn.push(mergedValue);
 
-            // Mark this tile as merged
             const rowIndex = mergedColumn.length - 1;
             newMergedTiles.add(`${rowIndex}-${col}`);
 
@@ -372,35 +378,39 @@ const Game2048 = memo(function Game2048({
         }
       }
 
-      // Animer les fusions
-      if (moved && newMergedTiles.size > 0) {
-        setMergedTiles(newMergedTiles);
-        setTimeout(() => {
-          setMergedTiles(new Set());
-        }, 200);
-      }
-
-      return { grid: newGrid, moved };
+      return { grid: newGrid, moved, mergedTiles: newMergedTiles };
     },
     [config.size]
   );
 
+  const moveUp = useCallback(
+    (currentGrid: number[][]) => {
+      const res = computeMoveUp(currentGrid);
+      if (res.moved && res.mergedTiles.size > 0) {
+        setMergedTiles(res.mergedTiles);
+        setTimeout(() => setMergedTiles(new Set()), 200);
+      }
+      return { grid: res.grid, moved: res.moved };
+    },
+    [computeMoveUp]
+  );
+
   // Move tiles down
-  const moveDown = useCallback(
+  const computeMoveDown = useCallback(
     (currentGrid: number[][]) => {
       const newGrid = currentGrid.map(row => [...row]);
       let moved = false;
       const newMergedTiles = new Set<string>();
 
       for (let col = 0; col < config.size; col++) {
-        const column = [];
+        const column: number[] = [];
         for (let row = 0; row < config.size; row++) {
           if (newGrid[row][col] !== 0) {
             column.push(newGrid[row][col]);
           }
         }
 
-        const mergedColumn = [];
+        const mergedColumn: number[] = [];
         let i = column.length - 1;
 
         while (i >= 0) {
@@ -408,7 +418,6 @@ const Game2048 = memo(function Game2048({
             const mergedValue = column[i] * 2;
             mergedColumn.unshift(mergedValue);
 
-            // Mark this tile as merged
             const rowIndex = config.size - mergedColumn.length;
             newMergedTiles.add(`${rowIndex}-${col}`);
 
@@ -431,17 +440,21 @@ const Game2048 = memo(function Game2048({
         }
       }
 
-      // Animer les fusions
-      if (moved && newMergedTiles.size > 0) {
-        setMergedTiles(newMergedTiles);
-        setTimeout(() => {
-          setMergedTiles(new Set());
-        }, 200);
-      }
-
-      return { grid: newGrid, moved };
+      return { grid: newGrid, moved, mergedTiles: newMergedTiles };
     },
     [config.size]
+  );
+
+  const moveDown = useCallback(
+    (currentGrid: number[][]) => {
+      const res = computeMoveDown(currentGrid);
+      if (res.moved && res.mergedTiles.size > 0) {
+        setMergedTiles(res.mergedTiles);
+        setTimeout(() => setMergedTiles(new Set()), 200);
+      }
+      return { grid: res.grid, moved: res.moved };
+    },
+    [computeMoveDown]
   );
 
   // Handle moves
@@ -466,6 +479,11 @@ const Game2048 = memo(function Game2048({
       }
 
       if (result.moved) {
+        // Save history for undo
+        setHistory(prev => {
+          const next = [...prev, grid.map(r => [...r])];
+          return next.length > 50 ? next.slice(next.length - 50) : next;
+        });
         const newGrid = result.grid;
         const newTileKey = addRandomTile(newGrid);
 
@@ -510,6 +528,263 @@ const Game2048 = memo(function Game2048({
     ]
   );
 
+  // Heuristic for auto-move: favors more empty cells, smoothness, max tile in corner
+  const scoreGrid = useCallback(
+    (g: number[][]) => {
+      const size = config.size;
+      let empty = 0;
+      let smooth = 0;
+      let maxTile = 0;
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          const val = g[r][c];
+          if (val === 0) empty++;
+          if (val > maxTile) maxTile = val;
+          if (c + 1 < size) smooth -= Math.abs(val - g[r][c + 1]);
+          if (r + 1 < size) smooth -= Math.abs(val - g[r + 1][c]);
+        }
+      }
+      const corners = [
+        g[0][0],
+        g[0][size - 1],
+        g[size - 1][0],
+        g[size - 1][size - 1],
+      ];
+      const cornerBonus = Math.max(...corners) === maxTile ? 1 : 0;
+      return empty * 100 + smooth * 0.1 + cornerBonus * 50;
+    },
+    [config.size]
+  );
+
+  type SimResult = {
+    moved: boolean;
+    score: number;
+    grid: number[][];
+    safe: boolean;
+  };
+  const simulateMove = useCallback(
+    (dir: 'left' | 'right' | 'up' | 'down'): SimResult => {
+      // Guard: grid not yet initialized
+      const validShape =
+        Array.isArray(grid) &&
+        grid.length === config.size &&
+        grid.every(row => Array.isArray(row) && row.length === config.size);
+      if (!validShape) {
+        return {
+          moved: false,
+          score: -Infinity,
+          grid,
+          safe: false,
+        };
+      }
+      const handler =
+        dir === 'left'
+          ? moveLeft
+          : dir === 'right'
+            ? moveRight
+            : dir === 'up'
+              ? moveUp
+              : moveDown;
+      // Use pure compute variants to avoid side-effects during simulation
+      const compute =
+        handler === moveLeft
+          ? computeMoveLeft
+          : handler === moveRight
+            ? computeMoveRight
+            : handler === moveUp
+              ? computeMoveUp
+              : computeMoveDown;
+      const res = compute(grid);
+      if (!res.moved)
+        return { moved: false, score: -Infinity, grid: res.grid, safe: false };
+
+      // Consider all possible spawns (adversarial/worst-case) to avoid instant loss
+      const size = config.size;
+      const empties: { r: number; c: number }[] = [];
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          if (res.grid[r][c] === 0) empties.push({ r, c });
+        }
+      }
+
+      if (empties.length === 0) {
+        const over = checkGameOver(res.grid);
+        return {
+          moved: true,
+          score: over ? -Infinity : scoreGrid(res.grid),
+          grid: res.grid,
+          safe: !over,
+        };
+      }
+
+      let worstScore = Infinity;
+      let anyNonLosing = false;
+      for (const { r, c } of empties) {
+        for (const val of [2, 4]) {
+          const g2 = res.grid.map(row => [...row]);
+          g2[r][c] = val;
+          const over = checkGameOver(g2);
+          if (!over) anyNonLosing = true;
+          const s = scoreGrid(g2);
+          if (s < worstScore) worstScore = s;
+        }
+      }
+
+      return {
+        moved: true,
+        score: worstScore,
+        grid: res.grid,
+        safe: anyNonLosing,
+      };
+    },
+    [
+      grid,
+      config.size,
+      moveLeft,
+      moveRight,
+      moveUp,
+      moveDown,
+      scoreGrid,
+      checkGameOver,
+      computeMoveDown,
+      computeMoveUp,
+      computeMoveLeft,
+      computeMoveRight,
+    ]
+  );
+
+  const autoMove = useCallback(() => {
+    // Try shortest-path to target first (bounded depth search)
+    const dirs: ('left' | 'right' | 'up' | 'down')[] = [
+      'left',
+      'right',
+      'up',
+      'down',
+    ];
+
+    const chooseBestSpawn = (g: number[][]): number[][] => {
+      const size = config.size;
+      const empties: { r: number; c: number }[] = [];
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++)
+          if (g[r][c] === 0) empties.push({ r, c });
+      }
+      if (empties.length === 0) return g;
+      let bestScore = -Infinity;
+      let best: number[][] | null = null;
+      for (const { r, c } of empties) {
+        for (const val of [2, 4]) {
+          const g2 = g.map(row => [...row]);
+          g2[r][c] = val;
+          const s = scoreGrid(g2);
+          if (s > bestScore) {
+            bestScore = s;
+            best = g2;
+          }
+        }
+      }
+      return best || g;
+    };
+
+    const computeAfterDir = (
+      g: number[][],
+      d: 'left' | 'right' | 'up' | 'down'
+    ) => {
+      const res =
+        d === 'left'
+          ? computeMoveLeft(g)
+          : d === 'right'
+            ? computeMoveRight(g)
+            : d === 'up'
+              ? computeMoveUp(g)
+              : computeMoveDown(g);
+      if (!res.moved) return null;
+      const spawned = chooseBestSpawn(res.grid);
+      return spawned;
+    };
+
+    const timeLimitMs = 25; // keep it snappy
+    const start = Date.now();
+    const maxDepth = 5;
+
+    const isWin = (g: number[][]) => checkWin(g);
+
+    const iddfs = (): ('left' | 'right' | 'up' | 'down') | null => {
+      for (let depth = 1; depth <= maxDepth; depth++) {
+        for (const firstDir of dirs) {
+          const firstGrid = computeAfterDir(grid, firstDir);
+          if (!firstGrid) continue;
+          if (isWin(firstGrid)) return firstDir;
+
+          const stack: { grid: number[][]; d: number }[] = [
+            { grid: firstGrid, d: 1 },
+          ];
+          let found = false;
+          while (stack.length > 0) {
+            if (Date.now() - start > timeLimitMs) break;
+            const node = stack.pop()!;
+            if (node.d >= depth) continue;
+            for (const dir of dirs) {
+              const next = computeAfterDir(node.grid, dir);
+              if (!next) continue;
+              if (isWin(next)) {
+                found = true;
+                break;
+              }
+              stack.push({ grid: next, d: node.d + 1 });
+            }
+            if (found) return firstDir;
+          }
+          if (Date.now() - start > timeLimitMs) break;
+        }
+        if (Date.now() - start > timeLimitMs) break;
+      }
+      return null;
+    };
+
+    const spMove = iddfs();
+    if (spMove) {
+      handleMove(spMove);
+      return;
+    }
+
+    // Fallback to conservative safe heuristic
+    let bestSafeDir: 'left' | 'right' | 'up' | 'down' | null = null;
+    let bestSafeScore = -Infinity;
+    dirs.forEach(d => {
+      const res = simulateMove(d);
+      if (!res.moved) return;
+      if (res.safe && res.score > bestSafeScore) {
+        bestSafeScore = res.score;
+        bestSafeDir = d;
+      }
+    });
+    if (bestSafeDir) handleMove(bestSafeDir);
+  }, [
+    simulateMove,
+    handleMove,
+    checkWin,
+    computeMoveDown,
+    computeMoveUp,
+    computeMoveLeft,
+    computeMoveRight,
+    config.size,
+    scoreGrid,
+    grid,
+  ]);
+
+  const undo = useCallback(() => {
+    setHistory(prev => {
+      if (prev.length === 0) return prev;
+      const next = [...prev];
+      const last = next.pop()!;
+      setGrid(last.map(r => [...r]));
+      setGameOver(false);
+      setWon(false);
+      return next;
+    });
+  }, []);
+
   // Debug event handling
   useEffect(() => {
     const handleDebugWin = () => {
@@ -532,13 +807,53 @@ const Game2048 = memo(function Game2048({
     if (gameElement) {
       gameElement.addEventListener('debug-win', handleDebugWin);
       gameElement.addEventListener('debug-gameover', handleDebugGameOver);
+      const handleAuto = () => autoMove();
+      const handleUndo = () => undo();
+      const handleQuery = (evt: Event) => {
+        const e = evt as CustomEvent<{
+          type: 'undo' | 'auto';
+          available?: boolean;
+        }>;
+        if (!e.detail) return;
+        if (e.detail.type === 'undo') e.detail.available = history.length > 0;
+        if (e.detail.type === 'auto') {
+          // available if any valid move exists (game not over)
+          const dirs: ('left' | 'right' | 'up' | 'down')[] = [
+            'left',
+            'right',
+            'up',
+            'down',
+          ];
+          e.detail.available =
+            !gameOver &&
+            dirs.some(d => {
+              const res = simulateMove(d);
+              return res.moved;
+            });
+        }
+      };
+      gameElement.addEventListener('2048-auto-move', handleAuto);
+      gameElement.addEventListener('2048-undo', handleUndo);
+      gameElement.addEventListener('2048-query-available', handleQuery);
 
       return () => {
         gameElement.removeEventListener('debug-win', handleDebugWin);
         gameElement.removeEventListener('debug-gameover', handleDebugGameOver);
+        gameElement.removeEventListener('2048-auto-move', handleAuto);
+        gameElement.removeEventListener('2048-undo', handleUndo);
+        gameElement.removeEventListener('2048-query-available', handleQuery);
       };
     }
-  }, [gameOver, onWin, onLose]);
+  }, [
+    gameOver,
+    onWin,
+    onLose,
+    autoMove,
+    undo,
+    history.length,
+    checkGameOver,
+    simulateMove,
+  ]);
 
   // Gestion du clavier
   useEffect(() => {

@@ -225,8 +225,9 @@ export default function SlotMachine({ onWin, onClose }: SlotMachineProps) {
           <div className='flex items-center justify-between w-full max-w-sm'>
             <div className='text-sm text-slate-600 dark:text-slate-300 flex items-center gap-2 relative'>
               <span>Solde:</span>
-              <span className='inline-flex items-center gap-1 font-semibold text-yellow-700 dark:text-yellow-400'>
-                <Coins className='h-4 w-4' /> {coins}
+              <span className='inline-flex items-center gap-1 font-semibold text-amber-700 dark:text-amber-400'>
+                <Coins className='size-4 text-amber-700 dark:text-amber-400' />{' '}
+                {coins}
               </span>
               {/* Floating coin delta animations */}
               <div className='absolute left-full ml-1 pointer-events-none'>
@@ -251,7 +252,7 @@ export default function SlotMachine({ onWin, onClose }: SlotMachineProps) {
               className='px-4 py-2 border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-800 disabled:opacity-50 disabled:cursor-not-allowed'
             >
               <span className='inline-flex items-center gap-2'>
-                <Coins className='h-4 w-4' />
+                <Coins className='size-4' />
                 Lancer ({SPIN_COST})
               </span>
             </Button>

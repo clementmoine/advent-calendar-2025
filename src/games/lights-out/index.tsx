@@ -28,6 +28,12 @@ function createRandomBoard(size: number, rng: () => number = Math.random) {
   return board;
 }
 
+function createEmptyBoard(size: number) {
+  return Array.from({ length: size }, () =>
+    Array.from({ length: size }, () => false)
+  );
+}
+
 function toggleAt(board: boolean[][], row: number, col: number) {
   const size = board.length;
   const flip = (r: number, c: number) => {
@@ -46,14 +52,77 @@ const LightsOut = memo(function LightsOut({ onWin, gameData }: GameProps) {
   const difficulty: Difficulty = getDifficultyFromDay(day);
   const size = getGridSizeForDifficulty(difficulty);
 
-  const [board, setBoard] = useState<boolean[][]>(() =>
-    createRandomBoard(size)
-  );
+  // Important: start with a deterministic board for SSR to avoid hydration mismatches
+  const [board, setBoard] = useState<boolean[][]>(() => createEmptyBoard(size));
   const [isWon, setIsWon] = useState(false);
+  const [ready, setReady] = useState(false);
+
+  // Solve using row-chasing: try all first-row click patterns (2^size)
+  // Return minimal sequence of clicks as ordered pairs (row-major order)
+  const solveShortest = useCallback(
+    (b: boolean[][]): { r: number; c: number }[] | null => {
+      const n = size;
+      if (!b || b.length !== n) return null;
+
+      const cloneBoard = (src: boolean[][]) => src.map(row => row.slice());
+      const applyClick = (bb: boolean[][], r: number, c: number) => {
+        toggleAt(bb, r, c);
+      };
+
+      let bestSolution: { r: number; c: number }[] | null = null;
+
+      const totalMasks = 1 << n; // first row patterns
+      for (let mask = 0; mask < totalMasks; mask++) {
+        const bb = cloneBoard(b);
+        const clicks: { r: number; c: number }[] = [];
+
+        // Apply first row pattern
+        for (let c = 0; c < n; c++) {
+          if ((mask >> c) & 1) {
+            applyClick(bb, 0, c);
+            clicks.push({ r: 0, c });
+          }
+        }
+
+        // For each subsequent row, click where the cell above is on
+        for (let r = 1; r < n; r++) {
+          for (let c = 0; c < n; c++) {
+            if (bb[r - 1][c]) {
+              applyClick(bb, r, c);
+              clicks.push({ r, c });
+            }
+          }
+        }
+
+        // Check last row all off
+        let ok = true;
+        for (let c = 0; c < n; c++) if (bb[n - 1][c]) ok = false;
+
+        if (ok) {
+          if (bestSolution === null || clicks.length < bestSolution.length) {
+            bestSolution = clicks;
+          }
+        }
+      }
+
+      return bestSolution;
+    },
+    [size]
+  );
+
+  const findBestMove = useCallback((): { r: number; c: number } | null => {
+    if (!ready || !board || board.length !== size) return null;
+    const sol = solveShortest(board);
+    if (!sol || sol.length === 0) return null;
+    // Next move in the shortest path
+    return sol[0] ?? null;
+  }, [board, size, solveShortest, ready]);
 
   useEffect(() => {
-    // When reset signal changes, regenerate
-    // caller triggers via key change; also expose a button locally
+    // Generate a random, solvable board on the client after hydration
+    setBoard(createRandomBoard(size));
+    setIsWon(false);
+    setReady(true);
   }, [size]);
 
   const allOff = useMemo(
@@ -62,11 +131,12 @@ const LightsOut = memo(function LightsOut({ onWin, gameData }: GameProps) {
   );
 
   useEffect(() => {
+    if (!ready) return;
     if (allOff && !isWon) {
       setIsWon(true);
       onWin?.();
     }
-  }, [allOff, isWon, onWin]);
+  }, [allOff, isWon, onWin, ready]);
 
   const handleCellClick = useCallback(
     (r: number, c: number) => {
@@ -79,6 +149,29 @@ const LightsOut = memo(function LightsOut({ onWin, gameData }: GameProps) {
     },
     [isWon]
   );
+
+  // Hint integration: auto-move and availability
+  useEffect(() => {
+    const el = document.querySelector('[data-game-component]');
+    if (!el) return;
+    const handleAuto = () => {
+      if (isWon) return;
+      const move = findBestMove();
+      if (move) handleCellClick(move.r, move.c);
+    };
+    const handleQuery = (evt: Event) => {
+      const e = evt as CustomEvent<{ type: 'auto'; available?: boolean }>;
+      if (!e.detail || e.detail.type !== 'auto') return;
+      const move = findBestMove();
+      e.detail.available = Boolean(move);
+    };
+    el.addEventListener('lightsout-auto-move', handleAuto);
+    el.addEventListener('lightsout-query-available', handleQuery);
+    return () => {
+      el.removeEventListener('lightsout-auto-move', handleAuto);
+      el.removeEventListener('lightsout-query-available', handleQuery);
+    };
+  }, [findBestMove, handleCellClick, isWon]);
 
   return (
     <div className='flex flex-col gap-4 items-center'>

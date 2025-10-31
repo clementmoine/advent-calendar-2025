@@ -155,7 +155,7 @@ export default function AdventCalendar() {
       const isDisabledCard = !!gameInfo.disabledLabel || !gameInfo.hasEnvWord;
       const cardContent = (
         <Card
-          className={`w-32 h-32 card-hover ${
+          className={`size-32 card-hover ${
             isAnimated || isDisabledCard
               ? 'cursor-not-allowed'
               : 'cursor-pointer'
@@ -187,21 +187,21 @@ export default function AdventCalendar() {
                   </div>
                 </div>
               ) : gameInfo.disabledLabel ? (
-                <div className='h-8 w-8 mx-auto text-slate-600 dark:text-slate-300'>
+                <div className='size-8 mx-auto text-slate-600 dark:text-slate-300'>
                   {day === 25 ? (
-                    <TreePine className='h-8 w-8 mx-auto' />
+                    <TreePine className='size-8 mx-auto' />
                   ) : isWeekend(day) ? (
-                    <Bed className='h-8 w-8 mx-auto' />
+                    <Bed className='size-8 mx-auto' />
                   ) : (
-                    <LockKeyhole className='h-8 w-8 mx-auto' />
+                    <LockKeyhole className='size-8 mx-auto' />
                   )}
                 </div>
               ) : gameInfo.hasEnvWord ? (
-                <div className='h-8 w-8 mx-auto text-emerald-600 dark:text-emerald-400'>
+                <div className='size-8 mx-auto text-emerald-600 dark:text-emerald-400'>
                   {day === 25 ? (
-                    <TreePine className='h-8 w-8 mx-auto' />
+                    <TreePine className='size-8 mx-auto' />
                   ) : (
-                    <Gift className='h-8 w-8 mx-auto' />
+                    <Gift className='size-8 mx-auto' />
                   )}
                 </div>
               ) : (
@@ -210,12 +210,12 @@ export default function AdventCalendar() {
                 </div>
               )
             ) : (
-              <Lock className='h-8 w-8 mx-auto text-slate-400 dark:text-slate-500' />
+              <Lock className='size-8 mx-auto text-slate-400 dark:text-slate-500' />
             )}
             {isUnlocked && !isCompleted && (
               <div className='mt-2 text-xs text-slate-600 dark:text-slate-300 h-4 flex items-center justify-center'>
                 {isAnimated ? (
-                  <Loader2 className='h-3 w-3 animate-spin' />
+                  <Loader2 className='size-3 animate-spin' />
                 ) : (
                   gameInfo.disabledLabel || gameInfo.name
                 )}
@@ -345,7 +345,7 @@ export default function AdventCalendar() {
                     {day ? (
                       renderCalendarCard(day, day - 1, showAnimation)
                     ) : (
-                      <div className='w-32 h-32 border border-transparent' />
+                      <div className='size-32 border border-transparent' />
                     )}
                   </div>
                 ))}

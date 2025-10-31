@@ -8,7 +8,7 @@ import { useArdoise } from '@/contexts/ardoise-context';
 import { usePiggyBank } from '@/contexts/piggy-bank-context';
 import ArdoiseDrawer from '@/components/ardoise-drawer';
 import PiggyBank from '@/components/piggy-bank';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface CommonLayoutProps {
   children: React.ReactNode;
@@ -44,6 +44,19 @@ export default function CommonLayout({
     }
   };
 
+  // Open piggy bank when receiving global event (mounted only)
+  useEffect(() => {
+    const handler: EventListener = () => setIsPiggyBankOpen(true);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('open-piggy-bank', handler);
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('open-piggy-bank', handler);
+      }
+    };
+  }, []);
+
   return (
     <div
       className={`min-h-screen bg-gradient-primary flex flex-col ${className}`}
@@ -62,7 +75,7 @@ export default function CommonLayout({
                     onClick={handleBack}
                     className='flex items-center gap-2'
                   >
-                    <ArrowLeft className='h-4 w-4' />
+                    <ArrowLeft className='size-4' />
                     <span>{backButtonText}</span>
                   </Button>
                 )}
@@ -72,7 +85,7 @@ export default function CommonLayout({
                     onClick={() => router.push('/')}
                     className='flex items-center gap-2 hover:opacity-80 transition-opacity duration-200'
                   >
-                    <Sparkles className='h-6 w-6 text-emerald-600 dark:text-emerald-400' />
+                    <Sparkles className='size-6 text-emerald-600 dark:text-emerald-400' />
                     <span className='text-xl font-bold text-slate-900 dark:text-slate-100'>
                       Calendrier de l&apos;Avent
                     </span>
@@ -106,7 +119,7 @@ export default function CommonLayout({
                     onClick={openArdoise}
                     className='flex items-center gap-2'
                   >
-                    <ClipboardList className='h-4 w-4' />
+                    <ClipboardList className='size-4' />
                     <span>Ardoise</span>
                   </Button>
 
@@ -114,9 +127,9 @@ export default function CommonLayout({
                     variant='outline'
                     size='sm'
                     onClick={() => setIsPiggyBankOpen(true)}
-                    className='flex items-center gap-2 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-200 hover:bg-yellow-100 dark:hover:bg-yellow-900/30'
+                    className='flex items-center gap-2 border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-800 dark:text-amber-300 dark:bg-amber-900/20 dark:border-amber-800'
                   >
-                    <Coins className='h-4 w-4' />
+                    <Coins className='size-4' />
                     <span>Tirelire ({coins})</span>
                   </Button>
                 </nav>
@@ -129,7 +142,7 @@ export default function CommonLayout({
                     onClick={openArdoise}
                     title='Ardoise'
                   >
-                    <ClipboardList className='h-4 w-4' />
+                    <ClipboardList className='size-4' />
                   </Button>
 
                   <Button
@@ -137,9 +150,9 @@ export default function CommonLayout({
                     size='icon'
                     onClick={() => setIsPiggyBankOpen(true)}
                     title={`Tirelire (${coins} pièces)`}
-                    className='bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-200 hover:bg-yellow-100 dark:hover:bg-yellow-900/30'
+                    className='border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-800 dark:text-amber-300 dark:bg-amber-900/20 dark:border-amber-800'
                   >
-                    <Coins className='h-4 w-4' />
+                    <Coins className='size-4' />
                   </Button>
                 </div>
 

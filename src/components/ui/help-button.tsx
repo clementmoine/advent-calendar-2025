@@ -73,7 +73,7 @@ export function HelpButton({
               exit={{ scale: 1.5, opacity: 0 }}
               className='absolute inset-0 flex items-center justify-center'
             >
-              <Coins className='h-4 w-4 text-yellow-500' />
+              <Coins className='size-4 text-yellow-500' />
             </motion.div>
           )}
         </AnimatePresence>
@@ -81,10 +81,10 @@ export function HelpButton({
         <div
           className={`flex items-center gap-2 ${isAnimating ? 'opacity-0' : 'opacity-100'}`}
         >
-          <HelpCircle className='h-4 w-4' />
+          <HelpCircle className='size-4' />
           {children}
           <div className='flex items-center gap-1'>
-            <Coins className='h-3 w-3 text-yellow-500' />
+            <Coins className='size-3 text-yellow-500' />
             <span className='text-xs font-medium'>{cost}</span>
           </div>
         </div>
