@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<div align="center">
 
-## Getting Started
+# 🎄 Advent Calendar 2025
 
-First, run the development server:
+Mini-jeux quotidiens + mot du jour. Next.js + TypeScript + Tailwind.
 
+</div>
+
+## ✨ Fonctionnalités
+- 25 jours, 25 jeux (découverte auto)
+- Mot du jour à débloquer à la victoire
+- Tirelire (mini‑jeux à coins)
+- A11y: raccourcis, labels, focus
+- Palette émeraude + dark mode
+
+## 🧱 Stack
+- Next.js (App Router), React, TypeScript
+- Tailwind CSS, shadcn/ui
+- Framer Motion, DnD Kit
+
+## 🚀 Démarrer
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm i
 pnpm dev
-# or
-bun dev
+# Prod
+pnpm run discover-games && pnpm build && pnpm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🕹️ Ajouter un jeu
+Créer `src/games/mon-jeu/` avec `index.tsx`, `rules.tsx`, `config.ts`.
+En dev, découverte auto. En prod, lancez `pnpm run discover-games`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🗂️ Structure
+```text
+src/
+  app/        # pages, API, layout
+  components/ # UI & composables
+  games/      # jeux
+  mini-games/ # mini‑jeux tirelire
+  lib/        # utils & config
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🧪 Lint & Types
+```bash
+pnpm lint
+pnpm type-check
+```
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📄 Licence
+MIT © 2025
