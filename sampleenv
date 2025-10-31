@@ -1,0 +1,29 @@
+# Days with specific words for the advent calendar
+# (example: DAY_1=Bonjour DAY_2=tous DAY_3=à ... Which needs to be reordered by the user to form the phrase "Bonjour à tous")
+DAY_1=
+DAY_2=
+DAY_3=
+DAY_4=
+DAY_5=
+DAY_8=
+DAY_9=
+DAY_10=
+DAY_11=
+DAY_12=
+DAY_15=
+DAY_16=
+DAY_17=
+
+# Disabled days specific sentences (by default, we use "Aucun mot affecté")
+DAY_6_DISABLED=Bon week-end
+DAY_7_DISABLED=Bon week-end
+DAY_13_DISABLED=Bon week-end
+DAY_14_DISABLED=Bon week-end
+DAY_18_DISABLED=Jour de review
+DAY_19_DISABLED=C'est terminé
+DAY_20_DISABLED=Bon week-end
+DAY_21_DISABLED=Bon week-end
+DAY_22_DISABLED=C'est terminé
+DAY_23_DISABLED=C'est terminé
+DAY_24_DISABLED=Bon réveillon
+DAY_25_DISABLED=Joyeux Noël
