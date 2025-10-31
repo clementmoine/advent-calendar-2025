@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { GameComponent, GameMetadata } from '@/lib/games';
+import { Loader2 } from 'lucide-react';
 
 interface DevGameData {
   day: number;
@@ -67,7 +68,7 @@ export default function DevPage() {
     return (
       <div className='flex items-center justify-center min-h-screen'>
         <div className='text-center'>
-          <div className='spinner size-12 border-emerald-600 mx-auto mb-4'></div>
+          <Loader2 className='animate-spin size-12 mx-auto mb-4' />
           <p className='text-slate-600 dark:text-slate-400'>
             Chargement des jeux...
           </p>

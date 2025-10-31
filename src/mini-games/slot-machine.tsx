@@ -6,10 +6,19 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
+  DialogDescription,
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Coins } from 'lucide-react';
+import {
+  Coins,
+  Star,
+  Bell,
+  Apple,
+  Grape,
+  Citrus,
+  CandyCane,
+} from 'lucide-react';
 import { usePiggyBank } from '@/contexts/piggy-bank-context';
 
 interface SlotMachineProps {
@@ -18,7 +27,16 @@ interface SlotMachineProps {
   onClose: () => void;
 }
 
-const SYMBOLS = ['🍒', '🍋', '🍇', '⭐', '🔔', '🍀'];
+// Symbol components with their associated icons and colors
+const SYMBOL_CONFIGS = [
+  { Icon: CandyCane, color: 'text-emerald-500 dark:text-emerald-400' },
+  { Icon: Citrus, color: 'text-yellow-500 dark:text-yellow-400' },
+  { Icon: Apple, color: 'text-red-500 dark:text-red-400' },
+  { Icon: Star, color: 'text-amber-500 dark:text-amber-400' },
+  { Icon: Bell, color: 'text-orange-500 dark:text-orange-400' },
+  { Icon: Grape, color: 'text-purple-500 dark:text-purple-400' },
+] as const;
+
 const REEL_COUNT = 3;
 const REPEAT_FACTOR = 8;
 const SPIN_COST = 1;
@@ -29,8 +47,8 @@ export default function SlotMachine({ onWin, onClose }: SlotMachineProps) {
   const [symbolSize, setSymbolSize] = useState(64);
   const symbolRef = useRef<HTMLDivElement | null>(null);
   const longReel = Array.from(
-    { length: SYMBOLS.length * REPEAT_FACTOR },
-    (_, i) => SYMBOLS[i % SYMBOLS.length]
+    { length: SYMBOL_CONFIGS.length * REPEAT_FACTOR },
+    (_, i) => SYMBOL_CONFIGS[i % SYMBOL_CONFIGS.length]
   );
 
   // removed animTargets state (we only need local targets per spin)
@@ -72,13 +90,13 @@ export default function SlotMachine({ onWin, onClose }: SlotMachineProps) {
   }, []);
 
   const computeTargets = useCallback(() => {
-    const roundsBase = SYMBOLS.length * REPEAT_FACTOR * symbolSize;
+    const roundsBase = SYMBOL_CONFIGS.length * REPEAT_FACTOR * symbolSize;
     return Array.from({ length: REEL_COUNT }, (_, i) => {
-      const finalIndex = Math.floor(Math.random() * SYMBOLS.length);
+      const finalIndex = Math.floor(Math.random() * SYMBOL_CONFIGS.length);
       const extraRounds = (i + 1) * 16; // spin even longer per reel
       return (
         roundsBase +
-        extraRounds * SYMBOLS.length * symbolSize +
+        extraRounds * SYMBOL_CONFIGS.length * symbolSize +
         finalIndex * symbolSize
       );
     });
@@ -107,13 +125,13 @@ export default function SlotMachine({ onWin, onClose }: SlotMachineProps) {
       streak >= 29 || (streak >= 19 && Math.random() < 0.5);
     let newTargets = computeTargets();
     if (shouldForceWin) {
-      const roundsBase = SYMBOLS.length * REPEAT_FACTOR * symbolSize;
-      const finalIndex = Math.floor(Math.random() * SYMBOLS.length);
+      const roundsBase = SYMBOL_CONFIGS.length * REPEAT_FACTOR * symbolSize;
+      const finalIndex = Math.floor(Math.random() * SYMBOL_CONFIGS.length);
       newTargets = Array.from({ length: REEL_COUNT }, (_, i) => {
         const extraRounds = (i + 1) * 16;
         return (
           roundsBase +
-          extraRounds * SYMBOLS.length * symbolSize +
+          extraRounds * SYMBOL_CONFIGS.length * symbolSize +
           finalIndex * symbolSize
         );
       });
@@ -122,7 +140,7 @@ export default function SlotMachine({ onWin, onClose }: SlotMachineProps) {
 
     const startReel = async (i: number) => {
       const ctrl = controls[i];
-      const loopHeight = SYMBOLS.length * symbolSize;
+      const loopHeight = SYMBOL_CONFIGS.length * symbolSize;
       await ctrl.start({ y: 0, transition: { duration: 0 } });
       // linear spin to overshoot with longer path for later reels
       const loops = 3 + i; // 3,4,5
@@ -141,10 +159,9 @@ export default function SlotMachine({ onWin, onClose }: SlotMachineProps) {
       finishedRef.current += 1;
       if (finishedRef.current === REEL_COUNT) {
         const indices = newTargets.map(
-          n => Math.floor(n / symbolSize) % SYMBOLS.length
+          n => Math.floor(n / symbolSize) % SYMBOL_CONFIGS.length
         );
-        const symbols = indices.map(idx => SYMBOLS[idx]);
-        const allEqual = symbols.every(s => s === symbols[0]);
+        const allEqual = indices.every(idx => idx === indices[0]);
         if (allEqual && !paidRef.current) {
           paidRef.current = true;
           showDelta(WIN_REWARD);
@@ -183,12 +200,11 @@ export default function SlotMachine({ onWin, onClose }: SlotMachineProps) {
     <Dialog open={true} onOpenChange={open => !open && onClose()}>
       <DialogContent className='max-w-md'>
         <DialogHeader>
-          <DialogTitle className='text-xl font-semibold text-slate-900 dark:text-slate-100'>
-            🎰 Machine à sous
-          </DialogTitle>
-          <p className='text-slate-600 dark:text-slate-300 text-sm'>
+          <DialogTitle>🎰 Machine à sous</DialogTitle>
+
+          <DialogDescription>
             Gagnez 20 pièces en alignant 3 symboles identiques.
-          </p>
+          </DialogDescription>
         </DialogHeader>
 
         <div className='flex flex-col gap-4 items-center'>
@@ -207,16 +223,19 @@ export default function SlotMachine({ onWin, onClose }: SlotMachineProps) {
                     transform: 'translateZ(0)',
                   }}
                 >
-                  {longReel.map((sym, i) => (
-                    <div
-                      key={`${col}-${i}`}
-                      ref={col === 0 && i === 0 ? symbolRef : undefined}
-                      className='flex items-center justify-center text-4xl'
-                      style={{ height: `${symbolSize}px`, width: '100%' }}
-                    >
-                      {sym}
-                    </div>
-                  ))}
+                  {longReel.map((sym, i) => {
+                    const { Icon, color } = sym;
+                    return (
+                      <div
+                        key={`${col}-${i}`}
+                        ref={col === 0 && i === 0 ? symbolRef : undefined}
+                        className='flex items-center justify-center'
+                        style={{ height: `${symbolSize}px`, width: '100%' }}
+                      >
+                        <Icon className={`${color} size-8`} />
+                      </div>
+                    );
+                  })}
                 </motion.div>
               </div>
             ))}

@@ -146,9 +146,8 @@ export default function Memory({ onWin, onClose }: MemoryProps) {
     <Dialog open={true} onOpenChange={open => !open && onClose()}>
       <DialogContent className='max-w-lg'>
         <DialogHeader>
-          <DialogTitle className='text-xl font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2'>
-            🧠 Memory
-          </DialogTitle>
+          <DialogTitle>🧠 Memory</DialogTitle>
+
           <DialogDescription>
             Gagnez 3 pièces en retrouvant toutes les paires.
           </DialogDescription>

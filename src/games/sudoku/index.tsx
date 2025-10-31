@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import Keyboard from '@/components/keyboard';
 import { GameProps, getDifficultyFromDay } from '@/lib/games';
 import { cn } from '@/lib/utils';
+import { Loader2 } from 'lucide-react';
 
 // Sudoku generator
 class SudokuGenerator {
@@ -440,7 +441,7 @@ const SudokuGame = memo(function SudokuGame({
       <div className='max-w-md mx-auto space-y-6'>
         <div className='flex justify-center items-center h-64'>
           <div className='text-center'>
-            <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4'></div>
+            <Loader2 className='animate-spin size-12 mx-auto mb-4' />
             <p className='text-slate-600 dark:text-slate-300'>
               Génération du Sudoku...
             </p>

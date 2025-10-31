@@ -230,9 +230,8 @@ export default function Simon({ onWin, onClose }: SimonProps) {
     <Dialog open={true} onOpenChange={open => !open && onClose()}>
       <DialogContent className='max-w-lg'>
         <DialogHeader>
-          <DialogTitle className='text-xl font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2'>
-            🎵 Simon
-          </DialogTitle>
+          <DialogTitle>🎵 Simon</DialogTitle>
+
           <DialogDescription>
             Gagnez 1 pièce à chaque séquence réussie.
           </DialogDescription>

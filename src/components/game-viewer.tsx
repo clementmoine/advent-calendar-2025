@@ -18,7 +18,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Trophy, Clock, Target, Info } from 'lucide-react';
+import { Trophy, Clock, Target, Info, Loader2 } from 'lucide-react';
 import { GameComponent, GameMetadata, getDifficultyFromDay } from '@/lib/games';
 import { useGameProgress } from '@/hooks/useGameProgress';
 import RestartButton from '@/components/ui/restart-button';
@@ -572,7 +572,7 @@ const GameViewer = memo(function GameViewer({
             fallback={
               <div className='flex items-center justify-center h-96'>
                 <div className='text-center'>
-                  <div className='spinner size-12 border-emerald-600 mx-auto mb-4'></div>
+                  <Loader2 className='animate-spin size-12 mx-auto mb-4' />
                   <p className='text-slate-600 dark:text-slate-400'>
                     Chargement du jeu...
                   </p>

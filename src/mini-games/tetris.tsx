@@ -1020,9 +1020,8 @@ export default function Tetris({ onWin, onLose, onClose }: TetrisProps) {
     <Dialog open={true} onOpenChange={open => !open && onClose()}>
       <DialogContent className='max-w-lg p-0'>
         <DialogHeader className='px-6 pt-6'>
-          <DialogTitle className='text-xl font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2'>
-            🧩 Tetris
-          </DialogTitle>
+          <DialogTitle>🧩 Tetris</DialogTitle>
+
           <DialogDescription>
             Gagnez 1 pièce par ligne effacée.
           </DialogDescription>

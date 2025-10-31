@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -157,10 +158,11 @@ export default function PiggyBank({ onClose }: PiggyBankProps) {
                 <DialogTitle className='text-2xl font-bold text-slate-900 dark:text-slate-100'>
                   Tirelire
                 </DialogTitle>
-                <p className='text-slate-600 dark:text-slate-400 text-sm'>
+
+                <DialogDescription>
                   Jouez aux mini-jeux pour gagner des pièces et vous aider dans
                   les jeux du calendrier.
-                </p>
+                </DialogDescription>
               </div>
             </div>
           </div>

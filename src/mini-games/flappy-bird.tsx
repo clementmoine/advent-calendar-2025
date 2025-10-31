@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -458,13 +459,11 @@ export default function FlappyBird({ onWin, onLose, onClose }: FlappyProps) {
     <Dialog open={true} onOpenChange={open => !open && onClose()}>
       <DialogContent className='max-w-md'>
         <DialogHeader>
-          <DialogTitle className='text-xl font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2'>
-            <span>🐦</span>
-            <span>Flappy Bird</span>
-          </DialogTitle>
-          <p className='text-slate-600 dark:text-slate-300 text-sm'>
+          <DialogTitle>🐦 Flappy Bird</DialogTitle>
+
+          <DialogDescription>
             Gagnez 1 pièce par tuyau franchi.
-          </p>
+          </DialogDescription>
         </DialogHeader>
 
         <div className='flex flex-col gap-3'>
