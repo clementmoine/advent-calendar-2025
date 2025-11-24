@@ -58,6 +58,15 @@ const MotsMeles = ({ onWin, gameData }: GameProps) => {
   const dailyWordRaw = gameData?.dailyWord || 'NOEL';
   const dailyWord = normalizeFrenchAccents(dailyWordRaw);
 
+  // Words provided manually from metadata (if any)
+  const manualWords = useMemo(() => {
+    const args = gameData?.gameMetadata?.args;
+    if (!args) return null;
+    return args
+      .split(',')
+      .map(w => normalizeFrenchAccents(w.trim().toUpperCase()));
+  }, [gameData]);
+
   const [selectedCells, setSelectedCells] = useState<Set<string>>(new Set());
   const [isSelecting, setIsSelecting] = useState(false);
   const [lastSelected, setLastSelected] = useState<Position | null>(null);
@@ -296,23 +305,31 @@ const MotsMeles = ({ onWin, gameData }: GameProps) => {
     let forcedIntersectionsCount = 0;
     const targetForcedIntersections = actualDifficulty === 'hard' ? 2 : 0; // Force 2 crossings on hard
 
-    // Generate a list of words to place
-    // Filter out hyphenated words (not placeable in a letter grid)
-    while (wordsToPlace.length < config.targetWordCount) {
-      const wordLen =
-        config.minWordLength +
-        Math.floor(rng() * (config.maxWordLength - config.minWordLength + 1));
-      const word = getRandomWord(wordLen);
-      // Ensure there are no hyphens (already filtered in getRandomWord; double-check)
-      if (
-        word &&
-        !word.includes('-') &&
-        !usedWords.has(word) &&
-        word.length >= config.minWordLength &&
-        word.length <= config.maxWordLength
-      ) {
-        usedWords.add(word);
-        wordsToPlace.push(word);
+    // If manual words provided → use them
+    if (manualWords && manualWords.length > 0) {
+      manualWords.forEach(w => {
+        if (!usedWords.has(w)) {
+          usedWords.add(w);
+          wordsToPlace.push(w);
+        }
+      });
+    } else {
+      // Otherwise fallback to random generation
+      while (wordsToPlace.length < config.targetWordCount) {
+        const wordLen =
+          config.minWordLength +
+          Math.floor(rng() * (config.maxWordLength - config.minWordLength + 1));
+        const word = getRandomWord(wordLen);
+        if (
+          word &&
+          !word.includes('-') &&
+          !usedWords.has(word) &&
+          word.length >= config.minWordLength &&
+          word.length <= config.maxWordLength
+        ) {
+          usedWords.add(word);
+          wordsToPlace.push(word);
+        }
       }
     }
 
