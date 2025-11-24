@@ -62,6 +62,7 @@ const GameViewer = memo(function GameViewer({
   const [unlockedWord, setUnlockedWord] = useState<string | undefined>(
     undefined
   );
+  const [isFirstCompletion, setIsFirstCompletion] = useState(false);
   const [modalReady, setModalReady] = useState(false);
 
   // Detect if any modal is open
@@ -102,8 +103,8 @@ const GameViewer = memo(function GameViewer({
     };
   }, [gameId]);
 
-  const { completeDay } = useGameProgress();
-  usePiggyBank();
+  const { completeDay, checkDayCompleted } = useGameProgress();
+  const { addCoins } = usePiggyBank();
   type TusmoQueryDetail = {
     type: 'absent' | 'present' | 'correct';
     available: boolean;
@@ -204,10 +205,28 @@ const GameViewer = memo(function GameViewer({
     // Le mot est déjà disponible depuis le SSR, on l'affiche immédiatement
     if (gameData?.day && gameData?.dailyWord) {
       console.log('🔓 Unlocking word immediately:', gameData.dailyWord);
+
+      // // DEBUG: Always treat as first completion for testing
+      // // Check if this is the first time completing this day
+      const wasAlreadyCompleted = checkDayCompleted(gameData.day);
+      // setIsFirstCompletion(true); // DEBUG: Always true
+      setIsFirstCompletion(!wasAlreadyCompleted);
+
+      // Complete the day
       completeDay(gameData.day, gameData.dailyWord, 1);
       setUnlockedWord(gameData.dailyWord);
+
+      // DEBUG: Always award 20 coins
+      addCoins(20);
     }
-  }, [gameId, gameData?.day, gameData?.dailyWord, completeDay]);
+  }, [
+    gameId,
+    gameData?.day,
+    gameData?.dailyWord,
+    completeDay,
+    checkDayCompleted,
+    addCoins,
+  ]);
 
   // Lose callback
   const handleLose = useCallback(() => {
@@ -225,6 +244,7 @@ const GameViewer = memo(function GameViewer({
     setGameOver(false);
     setWon(false);
     setUnlockedWord(undefined);
+    setIsFirstCompletion(false);
     setModalReady(false);
     onReset?.();
   }, [onReset]);
@@ -611,6 +631,7 @@ const GameViewer = memo(function GameViewer({
           onRestart={handleReset}
           onExit={handleExit}
           unlockedWord={unlockedWord}
+          isFirstCompletion={isFirstCompletion}
         />
       )}
     </div>

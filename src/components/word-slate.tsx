@@ -176,15 +176,14 @@ const WordSlate = memo(function WordSlate() {
     [reorderPhrase, words]
   );
 
-  return (
-    <div>
-      {/* Phrase display */}
-      <Card className='mb-6 bg-gradient-to-r from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 border-emerald-200 dark:border-emerald-700'>
-        <CardContent className='p-6'>
-          <h2 className='text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4'>
-            Composez votre phrase mystère :
-          </h2>
+  const completedCount = words.filter(w => w.isCompleted).length;
+  const totalDays = 25;
 
+  return (
+    <div className='space-y-6'>
+      {/* Phrase display */}
+      <Card className='bg-gradient-to-r from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 border-emerald-200 dark:border-emerald-700'>
+        <CardContent className='p-6'>
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
@@ -195,37 +194,37 @@ const WordSlate = memo(function WordSlate() {
               items={words.map(w => `day-${w.day}`)}
               strategy={horizontalListSortingStrategy}
             >
-              <div className='min-h-[80px] bg-white dark:bg-slate-800 p-4 rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-600 flex flex-wrap items-center justify-center'>
-                {words.map(item => (
-                  <WordItem
-                    key={`day-${item.day}`}
-                    word={item.word}
-                    day={item.day}
-                    isCompleted={item.isCompleted}
-                  />
-                ))}
+              <div className='min-h-[100px] bg-white dark:bg-slate-800 p-6 rounded-lg border-2 border-dashed border-emerald-300 dark:border-emerald-700 flex flex-wrap items-center justify-center gap-2'>
+                {words.length > 0 ? (
+                  words.map(item => (
+                    <WordItem
+                      key={`day-${item.day}`}
+                      word={item.word}
+                      day={item.day}
+                      isCompleted={item.isCompleted}
+                    />
+                  ))
+                ) : (
+                  <p className='text-sm text-slate-400 dark:text-slate-500 italic'>
+                    Aucun mot débloqué pour le moment. Complétez les jeux du calendrier pour débloquer des mots !
+                  </p>
+                )}
               </div>
             </SortableContext>
           </DndContext>
-        </CardContent>
-      </Card>
-
-      {/* Instructions */}
-      <Card className='mb-6 bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-700'>
-        <CardContent className='p-4'>
-          <p className='text-sm text-emerald-700 dark:text-emerald-300'>
-            💡 <strong>Astuce :</strong> Glissez-déposez les mots dans la zone
-            ci-dessus pour les réorganiser et découvrir la phrase mystère !
+          
+          <p className='text-xs text-emerald-700 dark:text-emerald-300 mt-4 text-center'>
+            💡 Glissez-déposez les mots pour les réorganiser
           </p>
         </CardContent>
       </Card>
 
       {/* Stats */}
-      <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+      <div className='grid grid-cols-2 gap-4'>
         <Card className='bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'>
-          <CardContent className='p-4 text-center'>
-            <div className='text-2xl font-bold text-emerald-600 dark:text-emerald-400'>
-              {words.filter(w => w.isCompleted).length}
+          <CardContent className='p-5 text-center'>
+            <div className='text-3xl font-bold text-emerald-600 dark:text-emerald-400 mb-1'>
+              {completedCount}
             </div>
             <div className='text-sm text-slate-600 dark:text-slate-400'>
               Mots trouvés
@@ -234,20 +233,9 @@ const WordSlate = memo(function WordSlate() {
         </Card>
 
         <Card className='bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'>
-          <CardContent className='p-4 text-center'>
-            <div className='text-2xl font-bold text-slate-600 dark:text-slate-400'>
-              {words.length - words.filter(w => w.isCompleted).length}
-            </div>
-            <div className='text-sm text-slate-600 dark:text-slate-400'>
-              Mots restants
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className='bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'>
-          <CardContent className='p-4 text-center'>
-            <div className='text-2xl font-bold text-emerald-600 dark:text-emerald-400'>
-              {words.length}
+          <CardContent className='p-5 text-center'>
+            <div className='text-3xl font-bold text-slate-600 dark:text-slate-400 mb-1'>
+              {totalDays}
             </div>
             <div className='text-sm text-slate-600 dark:text-slate-400'>
               Total des jours

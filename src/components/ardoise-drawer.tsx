@@ -6,6 +6,7 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
+  SheetDescription,
 } from '@/components/ui/sheet';
 import WordSlate from '@/components/word-slate';
 
@@ -27,13 +28,16 @@ export default function ArdoiseDrawer({ isOpen, onClose }: ArdoiseDrawerProps) {
   return (
     <Sheet open={isOpen} onOpenChange={open => !open && onClose()}>
       <SheetContent side='bottom' className='h-[85vh] rounded-t-2xl'>
-        <SheetHeader>
-          <SheetTitle className='text-xl font-bold text-slate-900 dark:text-slate-100'>
+        <SheetHeader className='mb-6'>
+          <SheetTitle className='text-2xl font-bold text-slate-900 dark:text-slate-100'>
             📝 Ardoise de mots
           </SheetTitle>
+          <SheetDescription className='text-slate-600 dark:text-slate-400'>
+            Réorganisez les mots débloqués pour découvrir la phrase mystère
+          </SheetDescription>
         </SheetHeader>
 
-        <div className='flex-1 overflow-y-auto custom-scrollbar mt-4'>
+        <div className='flex-1 overflow-y-auto custom-scrollbar'>
           <WordSlate key={refreshKey} />
         </div>
       </SheetContent>

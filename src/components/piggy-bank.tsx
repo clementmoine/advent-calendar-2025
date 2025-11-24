@@ -81,7 +81,7 @@ const MINI_GAMES: MiniGame[] = [
     id: 'tetris',
     name: 'Tetris',
     description: 'Empilez les blocs',
-    reward: 1,
+    reward: 5,
     difficulty: 'hard',
     icon: '🧩',
     completed: false,

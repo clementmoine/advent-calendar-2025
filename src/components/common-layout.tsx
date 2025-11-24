@@ -127,6 +127,7 @@ export default function CommonLayout({
                     variant='outline'
                     size='sm'
                     onClick={() => setIsPiggyBankOpen(true)}
+                    data-piggy-bank-button
                     className='flex items-center gap-2 border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-800 dark:text-amber-300 dark:bg-amber-900/20 dark:border-amber-800'
                   >
                     <Coins className='size-4' />
@@ -149,6 +150,7 @@ export default function CommonLayout({
                     variant='outline'
                     size='icon'
                     onClick={() => setIsPiggyBankOpen(true)}
+                    data-piggy-bank-button
                     title={`Tirelire (${coins} pièces)`}
                     className='border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-800 dark:text-amber-300 dark:bg-amber-900/20 dark:border-amber-800'
                   >
