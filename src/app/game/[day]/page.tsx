@@ -17,6 +17,7 @@ interface GameData {
     difficulty: 'easy' | 'medium' | 'hard';
     estimatedTime: string;
     instructions: string[];
+    args?: string;
   };
   dailyWord: string;
 }
@@ -40,6 +41,7 @@ async function getGameData(day: number): Promise<GameData> {
       difficulty: getActualDifficulty(gameConfig.metadata.difficulty, day),
       estimatedTime: gameConfig.metadata.estimatedTime,
       instructions: gameConfig.metadata.instructions,
+      args: process.env[`DAY_${day}_ARGS`],
     },
     dailyWord,
   };

@@ -47,6 +47,7 @@ interface GameData {
     difficulty: 'easy' | 'medium' | 'hard';
     estimatedTime: string;
     instructions: string[];
+    args?: string;
   };
   dailyWord: string;
 }
@@ -273,14 +274,7 @@ export default function AdventCalendar() {
         </motion.div>
       );
     },
-    [
-      calendarData,
-      selectedDay,
-      checkDayCompleted,
-      getWord,
-      handleDayClick,
-      isWeekend,
-    ]
+    [calendarData, selectedDay, checkDayCompleted, handleDayClick, isWeekend]
   );
 
   const renderWeeks = useCallback(() => {

@@ -12,7 +12,7 @@ export async function getDailyWord(day: number): Promise<string> {
   // Priority: environment variable
   const envWord = process.env[`DAY_${day}`];
   if (envWord) {
-    console.log(`📝 Using env word for day ${day}: ${envWord}`);
+    // console.log(`📝 Using env word for day ${day}: ${envWord}`);
     return envWord;
   }
 

@@ -336,27 +336,6 @@ const GameViewer = memo(function GameViewer({
                 </span>
               );
             })()}
-          {gameId === 'shifumi' &&
-            gameData &&
-            (() => {
-              // Compute rounds-to-win based on difficulty
-              const getRoundsToWinFromDifficulty = (
-                difficulty: string
-              ): number => {
-                if (difficulty === 'easy') return 1;
-                if (difficulty === 'medium') return 2;
-                return 3;
-              };
-              const roundsToWin = getRoundsToWinFromDifficulty(
-                displayConfig.difficulty
-              );
-
-              return (
-                <span className='inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-200'>
-                  {roundsToWin} manche{roundsToWin > 1 ? 's' : ''}
-                </span>
-              );
-            })()}
         </div>
 
         {/* Action Buttons */}

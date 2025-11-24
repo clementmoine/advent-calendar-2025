@@ -27,6 +27,7 @@ export interface GameMetadata {
   difficulty: 'easy' | 'medium' | 'hard' | 'dynamic';
   estimatedTime: string;
   instructions: string[];
+  args?: string;
 }
 
 // Type for game components

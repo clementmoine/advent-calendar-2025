@@ -32,6 +32,7 @@ export async function GET() {
         instructions: string[];
         hasEnvWord: boolean;
         disabledLabel: string | null;
+        args?: string;
       }
     > = {};
 
@@ -48,6 +49,7 @@ export async function GET() {
         estimatedTime: gameConfig.metadata.estimatedTime,
         instructions: gameConfig.metadata.instructions,
         hasEnvWord: Boolean(process.env[`DAY_${day}`]),
+        args: process.env[`DAY_${day}_ARGS`],
         disabledLabel,
       };
     }
