@@ -129,7 +129,7 @@ export default function GameEndModal({
             )
           ) : (
             <>
-              Ne désespère pas et n&apos;hésite pas à consulter le
+              Ne désespère pas et n&apos;hésite pas à consulter le{' '}
               <button
                 onClick={() => {
                   // Trigger rules opening
@@ -143,7 +143,7 @@ export default function GameEndModal({
                 className='text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 underline font-medium'
               >
                 mode d&apos;emploi
-              </button>
+              </button>{' '}
               pour obtenir des astuces !
             </>
           )}
