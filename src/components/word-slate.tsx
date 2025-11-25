@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback, memo } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
 import {
   DndContext,
   closestCenter,
@@ -19,7 +18,8 @@ import {
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useGameProgress } from '@/hooks/useGameProgress';
-import { stateClasses } from '@/lib/state-colors';
+import { Sparkles, GripVertical } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface WordItemProps {
   word: string | null;
@@ -40,7 +40,8 @@ function WordItem({ word, day, isCompleted }: WordItemProps) {
   const style = {
     transform: transform ? CSS.Translate.toString(transform) : undefined,
     transition: isDragging ? 'none' : transition,
-    opacity: isDragging ? 0.5 : 1,
+    opacity: isDragging ? 0.6 : 1,
+    scale: isDragging ? 1.05 : 1,
   };
 
   return (
@@ -48,30 +49,56 @@ function WordItem({ word, day, isCompleted }: WordItemProps) {
       ref={setNodeRef}
       style={style}
       {...attributes}
-      {...listeners}
-      className={stateClasses(
-        isCompleted ? 'completed' : 'default',
-        'inline-block cursor-grab active:cursor-grabbing rounded-lg px-3 py-2 mx-1 my-1'
+      className={cn(
+        'group relative cursor-grab active:cursor-grabbing',
+        'transition-all duration-200 ease-out',
+        isDragging && 'z-50 shadow-2xl'
       )}
     >
-      {isCompleted ? (
-        <span className='text-sm font-medium text-slate-900 dark:text-slate-100'>
-          {word}
-        </span>
-      ) : (
-        <span className='text-sm font-medium text-slate-400 dark:text-slate-500'>
-          Jour {day}
-        </span>
-      )}
+      <div
+        {...listeners}
+        className={cn(
+          'flex items-center gap-2 rounded-xl px-4 py-3',
+          'border-2 transition-all duration-200',
+          'shadow-sm hover:shadow-md',
+          isCompleted
+            ? 'bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/40 dark:to-emerald-800/40 border-emerald-300 dark:border-emerald-600 hover:border-emerald-400 dark:hover:border-emerald-500'
+            : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700',
+          isDragging && 'ring-2 ring-emerald-400 ring-offset-2'
+        )}
+      >
+        <GripVertical
+          className={cn(
+            'size-4 transition-colors',
+            isCompleted
+              ? 'text-emerald-400 dark:text-emerald-500 opacity-60'
+              : 'text-slate-400 opacity-60'
+          )}
+        />
+        {isCompleted ? (
+          <span className='text-base font-semibold text-emerald-900 dark:text-emerald-100'>
+            {word}
+          </span>
+        ) : (
+          <span className='text-sm font-medium text-slate-500 dark:text-slate-400'>
+            Jour {day}
+          </span>
+        )}
+      </div>
     </div>
   );
 }
 
-const WordSlate = memo(function WordSlate() {
+interface WordSlateProps {
+  onStatsChange?: (completed: number, total: number) => void;
+}
+
+const WordSlate = memo(function WordSlate({ onStatsChange }: WordSlateProps) {
   const { progress, reorderPhrase, isLoading } = useGameProgress();
   const [words, setWords] = useState<
     { word: string | null; day: number; isCompleted: boolean }[]
   >([]);
+  const [totalUsableDays, setTotalUsableDays] = useState<number>(25);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -176,72 +203,99 @@ const WordSlate = memo(function WordSlate() {
     [reorderPhrase, words]
   );
 
-  const completedCount = words.filter(w => w.isCompleted).length;
-  const totalDays = 25;
+  // Calculate total usable days (weekdays from 1-25 that are not disabled and have a word)
+  useEffect(() => {
+    const calculateTotalUsableDays = async () => {
+      try {
+        const response = await fetch('/api/calendar');
+        if (response.ok) {
+          const data = await response.json();
+          // Count days that are:
+          // 1. Weekdays (Mon-Fri)
+          // 2. Not disabled
+          // 3. Have a word defined (hasEnvWord)
+          let count = 0;
+          for (let day = 1; day <= 25; day++) {
+            const game = data.games?.[day];
+            if (game) {
+              // Check if it's a weekday
+              const year = new Date().getFullYear();
+              const dow = new Date(year, 11, day).getDay(); // 0 Sun, 6 Sat
+              const isWeekday = dow !== 0 && dow !== 6;
+
+              // Must be weekday, not disabled, and have a word
+              if (isWeekday && !game.disabledLabel && game.hasEnvWord) {
+                count++;
+              }
+            }
+          }
+          setTotalUsableDays(count);
+        }
+      } catch (error) {
+        console.error('Failed to fetch calendar data:', error);
+        // Fallback: count weekdays in December 1-25
+        const year = new Date().getFullYear();
+        let count = 0;
+        for (let day = 1; day <= 25; day++) {
+          const dow = new Date(year, 11, day).getDay();
+          if (dow !== 0 && dow !== 6) count++;
+        }
+        setTotalUsableDays(count);
+      }
+    };
+    calculateTotalUsableDays();
+  }, []);
+
+  // Notify parent of stats changes
+  useEffect(() => {
+    if (!onStatsChange) return;
+    const completedCount = words.filter(w => w.isCompleted).length;
+    onStatsChange(completedCount, totalUsableDays);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [words.length, totalUsableDays]);
 
   return (
     <div className='space-y-6'>
       {/* Phrase display */}
-      <Card className='bg-gradient-to-r from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 border-emerald-200 dark:border-emerald-700'>
-        <CardContent className='p-6'>
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragOver={handleDragOver}
-            onDragEnd={handleDragEnd}
+      <div>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={words.map(w => `day-${w.day}`)}
+            strategy={horizontalListSortingStrategy}
           >
-            <SortableContext
-              items={words.map(w => `day-${w.day}`)}
-              strategy={horizontalListSortingStrategy}
-            >
-              <div className='min-h-[100px] bg-white dark:bg-slate-800 p-6 rounded-lg border-2 border-dashed border-emerald-300 dark:border-emerald-700 flex flex-wrap items-center justify-center gap-2'>
-                {words.length > 0 ? (
-                  words.map(item => (
-                    <WordItem
-                      key={`day-${item.day}`}
-                      word={item.word}
-                      day={item.day}
-                      isCompleted={item.isCompleted}
-                    />
-                  ))
-                ) : (
-                  <p className='text-sm text-slate-400 dark:text-slate-500 italic'>
-                    Aucun mot débloqué pour le moment. Complétez les jeux du calendrier pour débloquer des mots !
-                  </p>
-                )}
-              </div>
-            </SortableContext>
-          </DndContext>
-          
-          <p className='text-xs text-emerald-700 dark:text-emerald-300 mt-4 text-center'>
-            💡 Glissez-déposez les mots pour les réorganiser
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Stats */}
-      <div className='grid grid-cols-2 gap-4'>
-        <Card className='bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'>
-          <CardContent className='p-5 text-center'>
-            <div className='text-3xl font-bold text-emerald-600 dark:text-emerald-400 mb-1'>
-              {completedCount}
+            <div className='min-h-[140px] bg-white/60 dark:bg-slate-800/40 backdrop-blur-sm p-8 rounded-2xl border-2 border-dashed border-emerald-200 dark:border-emerald-800 flex flex-wrap items-center justify-center gap-3 transition-colors duration-300 hover:border-emerald-300 dark:hover:border-emerald-700'>
+              {words.length > 0 ? (
+                words.map(item => (
+                  <WordItem
+                    key={`day-${item.day}`}
+                    word={item.word}
+                    day={item.day}
+                    isCompleted={item.isCompleted}
+                  />
+                ))
+              ) : (
+                <div className='flex flex-col items-center justify-center gap-3 py-8 text-center'>
+                  <div className='flex items-center justify-center size-16 rounded-full bg-slate-100 dark:bg-slate-800 border-2 border-dashed border-slate-300 dark:border-slate-700'>
+                    <Sparkles className='size-8 text-slate-400 dark:text-slate-500' />
+                  </div>
+                  <div>
+                    <p className='text-base font-medium text-slate-600 dark:text-slate-400 mb-1'>
+                      Aucun mot débloqué
+                    </p>
+                    <p className='text-sm text-slate-500 dark:text-slate-500'>
+                      Complétez les jeux du calendrier pour débloquer des mots !
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
-            <div className='text-sm text-slate-600 dark:text-slate-400'>
-              Mots trouvés
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className='bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'>
-          <CardContent className='p-5 text-center'>
-            <div className='text-3xl font-bold text-slate-600 dark:text-slate-400 mb-1'>
-              {totalDays}
-            </div>
-            <div className='text-sm text-slate-600 dark:text-slate-400'>
-              Total des jours
-            </div>
-          </CardContent>
-        </Card>
+          </SortableContext>
+        </DndContext>
       </div>
     </div>
   );

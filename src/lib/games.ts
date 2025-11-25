@@ -115,3 +115,17 @@ export const getGameTypeForBusinessDay = (day: number): string => {
   const rotationIndex = getRotationIndexForDay(day);
   return getGameTypeFromDay(rotationIndex);
 };
+
+/**
+ * Counts the total number of usable days (weekdays that are not disabled) from 1 to 25.
+ */
+export const getTotalUsableDays = (): number => {
+  const year = new Date().getFullYear();
+  let count = 0;
+  for (let d = 1; d <= 25; d++) {
+    const dow = new Date(year, 11, d).getDay(); // 0 Sun, 6 Sat
+    const isWeekday = dow !== 0 && dow !== 6;
+    if (isWeekday && !isDayDisabled(d)) count++;
+  }
+  return count;
+};
