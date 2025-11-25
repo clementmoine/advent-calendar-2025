@@ -56,6 +56,10 @@ const LightsOut = memo(function LightsOut({ onWin, gameData }: GameProps) {
   const [board, setBoard] = useState<boolean[][]>(() => createEmptyBoard(size));
   const [isWon, setIsWon] = useState(false);
   const [ready, setReady] = useState(false);
+  const [selectedCell, setSelectedCell] = useState<{
+    row: number;
+    col: number;
+  } | null>(null);
 
   // Solve using row-chasing: try all first-row click patterns (2^size)
   // Return minimal sequence of clicks as ordered pairs (row-major order)
@@ -123,6 +127,8 @@ const LightsOut = memo(function LightsOut({ onWin, gameData }: GameProps) {
     setBoard(createRandomBoard(size));
     setIsWon(false);
     setReady(true);
+    // Initialize selection to first cell
+    setSelectedCell({ row: 0, col: 0 });
   }, [size]);
 
   const allOff = useMemo(
@@ -141,6 +147,7 @@ const LightsOut = memo(function LightsOut({ onWin, gameData }: GameProps) {
   const handleCellClick = useCallback(
     (r: number, c: number) => {
       if (isWon) return;
+      setSelectedCell({ row: r, col: c });
       setBoard(prev => {
         const next = prev.map(row => row.slice());
         toggleAt(next, r, c);
@@ -150,6 +157,82 @@ const LightsOut = memo(function LightsOut({ onWin, gameData }: GameProps) {
     [isWon]
   );
 
+  const handleCellActivate = useCallback(
+    (r: number, c: number) => {
+      if (isWon) return;
+      setBoard(prev => {
+        const next = prev.map(row => row.slice());
+        toggleAt(next, r, c);
+        return next;
+      });
+    },
+    [isWon]
+  );
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isWon || !ready || !selectedCell) return;
+
+      const key = e.key;
+
+      if (key === 'Enter' || key === ' ') {
+        e.preventDefault();
+        handleCellActivate(selectedCell.row, selectedCell.col);
+      } else if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) {
+        e.preventDefault();
+
+        // Fonction pour trouver la prochaine cellule dans une direction avec wrapping
+        const findNextCell = (
+          startRow: number,
+          startCol: number,
+          direction: string
+        ) => {
+          let currentRow = startRow;
+          let currentCol = startCol;
+
+          // Déplacer dans la direction avec wrapping
+          switch (direction) {
+            case 'ArrowUp':
+              currentRow = currentRow - 1;
+              if (currentRow < 0) {
+                currentRow = size - 1; // Wrap to bottom
+              }
+              break;
+            case 'ArrowDown':
+              currentRow = currentRow + 1;
+              if (currentRow >= size) {
+                currentRow = 0; // Wrap to top
+              }
+              break;
+            case 'ArrowLeft':
+              currentCol = currentCol - 1;
+              if (currentCol < 0) {
+                currentCol = size - 1; // Wrap to right
+              }
+              break;
+            case 'ArrowRight':
+              currentCol = currentCol + 1;
+              if (currentCol >= size) {
+                currentCol = 0; // Wrap to left
+              }
+              break;
+          }
+
+          return { row: currentRow, col: currentCol };
+        };
+
+        const nextCell = findNextCell(selectedCell.row, selectedCell.col, key);
+        setSelectedCell(nextCell);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isWon, ready, selectedCell, size, handleCellActivate]);
+
   // Hint integration: auto-move and availability
   useEffect(() => {
     const el = document.querySelector('[data-game-component]');
@@ -157,7 +240,10 @@ const LightsOut = memo(function LightsOut({ onWin, gameData }: GameProps) {
     const handleAuto = () => {
       if (isWon) return;
       const move = findBestMove();
-      if (move) handleCellClick(move.r, move.c);
+      if (move) {
+        setSelectedCell({ row: move.r, col: move.c });
+        handleCellActivate(move.r, move.c);
+      }
     };
     const handleQuery = (evt: Event) => {
       const e = evt as CustomEvent<{ type: 'auto'; available?: boolean }>;
@@ -171,7 +257,7 @@ const LightsOut = memo(function LightsOut({ onWin, gameData }: GameProps) {
       el.removeEventListener('lightsout-auto-move', handleAuto);
       el.removeEventListener('lightsout-query-available', handleQuery);
     };
-  }, [findBestMove, handleCellClick, isWon]);
+  }, [findBestMove, handleCellActivate, isWon]);
 
   return (
     <div className='flex flex-col gap-4 items-center'>
@@ -186,20 +272,26 @@ const LightsOut = memo(function LightsOut({ onWin, gameData }: GameProps) {
               }}
             >
               {board.map((row, r) =>
-                row.map((cell, c) => (
-                  <button
-                    key={`${r}-${c}`}
-                    onClick={() => handleCellClick(r, c)}
-                    disabled={isWon}
-                    className={cn(
-                      'w-12 h-12 rounded-md border-2 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-60 flex items-center justify-center',
-                      cell
-                        ? 'bg-amber-200 hover:bg-amber-300 border-amber-400 dark:bg-yellow-900/30 dark:hover:bg-yellow-900/40 dark:border-yellow-600'
-                        : 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700'
-                    )}
-                    aria-label={`Cell ${r + 1}-${c + 1}`}
-                    aria-pressed={cell}
-                  >
+                row.map((cell, c) => {
+                  const isSelected =
+                    selectedCell?.row === r && selectedCell?.col === c;
+                  return (
+                    <button
+                      key={`${r}-${c}`}
+                      onClick={() => handleCellClick(r, c)}
+                      disabled={isWon}
+                      className={cn(
+                        'w-12 h-12 rounded-md border-2 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-60 flex items-center justify-center',
+                        isSelected
+                          ? 'ring-2 ring-emerald-500 ring-offset-2 dark:ring-offset-slate-800'
+                          : '',
+                        cell
+                          ? 'bg-amber-200 hover:bg-amber-300 border-amber-400 dark:bg-yellow-900/30 dark:hover:bg-yellow-900/40 dark:border-yellow-600'
+                          : 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700'
+                      )}
+                      aria-label={`Cell ${r + 1}-${c + 1}`}
+                      aria-pressed={cell}
+                    >
                     {cell ? (
                       <Sun
                         className={cn(
@@ -221,7 +313,8 @@ const LightsOut = memo(function LightsOut({ onWin, gameData }: GameProps) {
                       {cell ? 'Allumée' : 'Éteinte'}
                     </span>
                   </button>
-                ))
+                  );
+                })
               )}
             </div>
             {/* Restart button handled globally by GameViewer */}
