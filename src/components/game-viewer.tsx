@@ -64,6 +64,7 @@ const GameViewer = memo(function GameViewer({
   );
   const [isFirstCompletion, setIsFirstCompletion] = useState(false);
   const [modalReady, setModalReady] = useState(false);
+  const [isRulesDialogOpen, setIsRulesDialogOpen] = useState(false);
 
   // Detect if any modal is open
   useEffect(() => {
@@ -102,6 +103,41 @@ const GameViewer = memo(function GameViewer({
       cancelled = true;
     };
   }, [gameId]);
+
+  // Check if this is the first time opening this game and show rules automatically
+  useEffect(() => {
+    // Only for main games
+    const mainGames = ['2048', 'lights-out', 'mots-meles', 'sudoku', 'tusmo'];
+    if (!mainGames.includes(gameId)) {
+      return;
+    }
+
+    // Check if rules have been seen for this game
+    const storageKey = `game-rules-seen-${gameId}`;
+    const hasSeenRules = localStorage.getItem(storageKey) === 'true';
+
+    // If not seen, open the rules dialog automatically
+    if (!hasSeenRules) {
+      // Small delay to ensure the component is fully mounted
+      const timer = setTimeout(() => {
+        setIsRulesDialogOpen(true);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [gameId]);
+
+  // Mark rules as seen when dialog is closed
+  const handleRulesDialogOpenChange = useCallback(
+    (open: boolean) => {
+      setIsRulesDialogOpen(open);
+      if (!open) {
+        // Mark as seen when closing
+        const storageKey = `game-rules-seen-${gameId}`;
+        localStorage.setItem(storageKey, 'true');
+      }
+    },
+    [gameId]
+  );
 
   const { completeDay, checkDayCompleted } = useGameProgress();
   const { addCoins } = usePiggyBank();
@@ -275,6 +311,47 @@ const GameViewer = memo(function GameViewer({
     }),
     [gameMetadata, gameData?.day]
   );
+
+  // Difficulty configuration for the rules modal
+  const difficultyConfig = useMemo(() => {
+    const difficulty = displayConfig.difficulty;
+    const difficultyLabels: Record<'easy' | 'medium' | 'hard', string> = {
+      easy: 'Facile',
+      medium: 'Moyen',
+      hard: 'Difficile',
+    };
+    const difficultyColors: Record<
+      'easy' | 'medium' | 'hard',
+      {
+        bg: string;
+        text: string;
+        icon: string;
+      }
+    > = {
+      easy: {
+        bg: 'bg-emerald-50 dark:bg-emerald-900/20',
+        text: 'text-emerald-600 dark:text-emerald-400',
+        icon: 'text-emerald-600 dark:text-emerald-400',
+      },
+      medium: {
+        bg: 'bg-amber-50 dark:bg-amber-900/20',
+        text: 'text-amber-600 dark:text-amber-400',
+        icon: 'text-amber-600 dark:text-amber-400',
+      },
+      hard: {
+        bg: 'bg-red-50 dark:bg-red-900/20',
+        text: 'text-red-600 dark:text-red-400',
+        icon: 'text-red-600 dark:text-red-400',
+      },
+    };
+    const colors =
+      difficultyColors[difficulty as 'easy' | 'medium' | 'hard'] ||
+      difficultyColors.easy;
+    const label =
+      difficultyLabels[difficulty as 'easy' | 'medium' | 'hard'] || difficulty;
+
+    return { colors, label };
+  }, [displayConfig.difficulty]);
 
   return (
     <div className='space-y-6'>
@@ -467,7 +544,10 @@ const GameViewer = memo(function GameViewer({
               disabled={isLoading || isModalOpen}
             />
           )}
-          <Dialog>
+          <Dialog
+            open={isRulesDialogOpen}
+            onOpenChange={handleRulesDialogOpenChange}
+          >
             <DialogTrigger asChild>
               <Button
                 variant='outline'
@@ -488,13 +568,19 @@ const GameViewer = memo(function GameViewer({
                 </p>
 
                 <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-6'>
-                  <div className='text-center p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg'>
-                    <Target className='size-6 mx-auto mb-2 text-emerald-600 dark:text-emerald-400' />
+                  <div
+                    className={`text-center p-4 ${difficultyConfig.colors.bg} rounded-lg`}
+                  >
+                    <Target
+                      className={`size-6 mx-auto mb-2 ${difficultyConfig.colors.icon}`}
+                    />
                     <p className='font-semibold text-slate-900 dark:text-slate-100'>
                       Difficulté
                     </p>
-                    <p className='text-sm text-slate-600 dark:text-slate-300 capitalize'>
-                      {displayConfig.difficulty}
+                    <p
+                      className={`text-sm font-medium ${difficultyConfig.colors.text}`}
+                    >
+                      {difficultyConfig.label}
                     </p>
                   </div>
                   <div className='text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg'>
