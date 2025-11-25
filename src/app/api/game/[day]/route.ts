@@ -21,16 +21,18 @@ export async function GET(
 
     // In development mode, allow access even if not in December
     const isDevelopment = process.env.NODE_ENV === 'development';
-    const isDecember = today.getMonth() === 11;
 
     // Check if the day is unlocked
     const businessDayIndex = getBusinessDayIndex(today);
-    if (!isDevelopment && !isDecember && day > businessDayIndex) {
+    // In production, block access to future days (even in December)
+    if (!isDevelopment && day > businessDayIndex) {
+      const daysRemaining = day - businessDayIndex;
       return NextResponse.json(
         {
           error: 'This day is not yet unlocked!',
           unlocked: false,
-          availableFrom: `Business day ${day}`,
+          daysRemaining,
+          message: `Revenez dans ${daysRemaining} jour${daysRemaining > 1 ? 's' : ''}`,
         },
         { status: 403 }
       );

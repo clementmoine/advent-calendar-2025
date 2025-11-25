@@ -179,7 +179,9 @@ const LightsOut = memo(function LightsOut({ onWin, gameData }: GameProps) {
       if (key === 'Enter' || key === ' ') {
         e.preventDefault();
         handleCellActivate(selectedCell.row, selectedCell.col);
-      } else if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) {
+      } else if (
+        ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)
+      ) {
         e.preventDefault();
 
         // Fonction pour trouver la prochaine cellule dans une direction avec wrapping
@@ -292,27 +294,27 @@ const LightsOut = memo(function LightsOut({ onWin, gameData }: GameProps) {
                       aria-label={`Cell ${r + 1}-${c + 1}`}
                       aria-pressed={cell}
                     >
-                    {cell ? (
-                      <Sun
-                        className={cn(
-                          'size-4',
-                          'text-amber-600 dark:text-yellow-300'
-                        )}
-                        aria-hidden='true'
-                      />
-                    ) : (
-                      <Moon
-                        className={cn(
-                          'size-4',
-                          'text-slate-500 dark:text-slate-400'
-                        )}
-                        aria-hidden='true'
-                      />
-                    )}
-                    <span className='sr-only'>
-                      {cell ? 'Allumée' : 'Éteinte'}
-                    </span>
-                  </button>
+                      {cell ? (
+                        <Sun
+                          className={cn(
+                            'size-4',
+                            'text-amber-600 dark:text-yellow-300'
+                          )}
+                          aria-hidden='true'
+                        />
+                      ) : (
+                        <Moon
+                          className={cn(
+                            'size-4',
+                            'text-slate-500 dark:text-slate-400'
+                          )}
+                          aria-hidden='true'
+                        />
+                      )}
+                      <span className='sr-only'>
+                        {cell ? 'Allumée' : 'Éteinte'}
+                      </span>
+                    </button>
                   );
                 })
               )}

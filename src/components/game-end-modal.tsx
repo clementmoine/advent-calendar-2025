@@ -11,7 +11,7 @@ import {
 import { CheckCircle, XCircle, Coins } from 'lucide-react';
 import RestartButton from '@/components/ui/restart-button';
 import { usePiggyBank } from '@/contexts/piggy-bank-context';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 interface GameEndModalProps {
   won: boolean;

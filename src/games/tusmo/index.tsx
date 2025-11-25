@@ -127,15 +127,6 @@ const TusmoGame = memo(function TusmoGame({
     [targetWord]
   );
 
-  const getLetterColor = useCallback(
-    (letter: string, position: number, guess: string) => {
-      // Use the calculated colors for the full guess
-      const colors = calculateLetterColors(guess);
-      return colors[position] || TUSMO_COLORS.absent;
-    },
-    [calculateLetterColors]
-  );
-
   const handleSubmit = useCallback(() => {
     if (currentGuess.length !== wordLength) return;
 

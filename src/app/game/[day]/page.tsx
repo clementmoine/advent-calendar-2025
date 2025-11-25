@@ -2,9 +2,11 @@ import {
   GAMES_CONFIG,
   getGameTypeForBusinessDay,
   getActualDifficulty,
+  getBusinessDayIndex,
 } from '@/lib/games';
 import GamePageClient from '@/components/game-page-client';
 import { getDailyWord } from '@/lib/server-utils';
+import LockedDayMessage from '@/components/locked-day-message';
 
 interface GameData {
   day: number;
@@ -60,6 +62,29 @@ export default async function GamePage({ params }: GamePageProps) {
       <div className='flex items-center justify-center min-h-screen'>
         <div className='text-center text-red-500'>
           <p>Jour invalide: {dayParam}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if the day is unlocked (only in production)
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  if (!isDevelopment) {
+    const today = new Date();
+    const businessDayIndex = getBusinessDayIndex(today);
+    if (day > businessDayIndex) {
+      const daysRemaining = day - businessDayIndex;
+      return <LockedDayMessage daysRemaining={daysRemaining} day={day} />;
+    }
+  }
+
+  // Check if day is disabled
+  const disabledLabel = process.env[`DAY_${day}_DISABLED`];
+  if (disabledLabel) {
+    return (
+      <div className='flex items-center justify-center min-h-screen'>
+        <div className='text-center text-red-500'>
+          <p>Ce jour est désactivé : {disabledLabel}</p>
         </div>
       </div>
     );

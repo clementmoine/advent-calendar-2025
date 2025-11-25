@@ -596,7 +596,7 @@ const MotsMeles = ({ onWin, gameData }: GameProps) => {
       wordsToFind: wordPlacements.map(wp => wp.word),
       reservedKeys: reservedKeySet,
     };
-  }, [day, dailyWord, config, GRID_SIZE, actualDifficulty]);
+  }, [day, dailyWord, config, GRID_SIZE, actualDifficulty, manualWords]);
 
   // Get a position key
   const getPositionKey = (pos: Position): string => `${pos.row}-${pos.col}`;

@@ -396,11 +396,7 @@ const SudokuGame = memo(function SudokuGame({
               if (currentRow === startRow && currentCol === startCol) {
                 // On a fait le tour complet sans trouver de case modifiable
                 // Chercher la case modifiable la plus proche dans la direction
-                return findClosestModifiableCell(
-                  startRow,
-                  startCol,
-                  direction
-                );
+                return findClosestModifiableCell(startRow, startCol, direction);
               }
 
               // Éviter les boucles infinies
@@ -428,8 +424,11 @@ const SudokuGame = memo(function SudokuGame({
             startCol: number,
             direction: string
           ) => {
-            const candidates: Array<{ row: number; col: number; dist: number }> =
-              [];
+            const candidates: Array<{
+              row: number;
+              col: number;
+              dist: number;
+            }> = [];
 
             // Parcourir toutes les cases modifiables et calculer la distance avec wrapping
             for (let r = 0; r < 9; r++) {
@@ -438,28 +437,16 @@ const SudokuGame = memo(function SudokuGame({
                   let dist = 0;
                   switch (direction) {
                     case 'ArrowUp':
-                      dist =
-                        startRow >= r
-                          ? startRow - r
-                          : startRow + (9 - r); // Wrap distance
+                      dist = startRow >= r ? startRow - r : startRow + (9 - r); // Wrap distance
                       break;
                     case 'ArrowDown':
-                      dist =
-                        r >= startRow
-                          ? r - startRow
-                          : (9 - startRow) + r; // Wrap distance
+                      dist = r >= startRow ? r - startRow : 9 - startRow + r; // Wrap distance
                       break;
                     case 'ArrowLeft':
-                      dist =
-                        startCol >= c
-                          ? startCol - c
-                          : startCol + (9 - c); // Wrap distance
+                      dist = startCol >= c ? startCol - c : startCol + (9 - c); // Wrap distance
                       break;
                     case 'ArrowRight':
-                      dist =
-                        c >= startCol
-                          ? c - startCol
-                          : (9 - startCol) + c; // Wrap distance
+                      dist = c >= startCol ? c - startCol : 9 - startCol + c; // Wrap distance
                       break;
                   }
                   candidates.push({ row: r, col: c, dist });

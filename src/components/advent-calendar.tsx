@@ -70,7 +70,7 @@ async function fetchGameData(day: number): Promise<GameData> {
 
 export default function AdventCalendar() {
   const router = useRouter();
-  const { checkDayCompleted, getWord } = useGameProgress();
+  const { checkDayCompleted } = useGameProgress();
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [currentGame, setCurrentGame] = useState<{
     gameType: string;
