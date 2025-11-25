@@ -1,4 +1,9 @@
 import React, { ReactElement, useEffect, useRef } from 'react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 type ConfigType = {
   gravity: number;
@@ -7,6 +12,7 @@ type ConfigType = {
   explosion_power: number;
   destroy_target: boolean;
   fade: boolean;
+  symbol: string | null;
 };
 
 class Config implements ConfigType {
@@ -16,6 +22,7 @@ class Config implements ConfigType {
   explosion_power = 25;
   destroy_target = true;
   fade = false;
+  symbol: string | null = null;
 }
 
 class Vector {
@@ -37,6 +44,7 @@ class Particle {
   hue: number;
   opacity: number;
   lifetime: number;
+  cachedCanvas: HTMLCanvasElement | null = null;
 
   constructor(position: Vector) {
     this.size = new Vector(
@@ -53,6 +61,28 @@ class Particle {
     this.hue = 360 * Math.random();
     this.opacity = 100;
     this.lifetime = Math.random() + 0.25;
+
+    // Pre-render emoji to canvas if symbol is defined
+    if (Confetti.CONFIG.symbol) {
+      this.cacheEmojiCanvas();
+    }
+  }
+
+  private cacheEmojiCanvas(): void {
+    const baseSize = Math.max(this.size.x, this.size.y);
+    // Make emojis larger for better visibility (1.8x multiplier)
+    const emojiSize = baseSize * 1.8;
+    const canvas = document.createElement('canvas');
+    canvas.width = emojiSize * 2;
+    canvas.height = emojiSize * 2;
+    const ctx = canvas.getContext('2d');
+    if (ctx && Confetti.CONFIG.symbol) {
+      ctx.font = `${emojiSize}px Arial`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(Confetti.CONFIG.symbol, emojiSize, emojiSize);
+      this.cachedCanvas = canvas;
+    }
   }
 
   static generateVelocity(): Vector {
@@ -81,17 +111,56 @@ class Particle {
     return this.position.y - 2 * this.size.x > 2 * window.innerHeight;
   }
 
+  isVisible(): boolean {
+    // Larger margin to avoid hiding too early
+    const margin = Math.max(this.size.x, this.size.y) * 2;
+    return (
+      this.position.x + margin >= 0 &&
+      this.position.x - margin <= window.innerWidth &&
+      this.position.y + margin >= 0 &&
+      this.position.y - margin <= window.innerHeight
+    );
+  }
+
   draw(ctx: CanvasRenderingContext2D): void {
     ctx.save();
-    ctx.beginPath();
     ctx.translate(
       this.position.x + this.size.x / 2,
       this.position.y + this.size.y / 2
     );
     ctx.rotate((this.rotation * Math.PI) / 180);
-    ctx.rect(-this.size.x / 2, -this.size.y / 2, this.size.x, this.size.y);
-    ctx.fillStyle = `hsla(${this.hue}deg, 90%, 65%, ${this.opacity}%)`;
-    ctx.fill();
+    ctx.globalAlpha = this.opacity / 100;
+
+    if (Confetti.CONFIG.symbol) {
+      if (this.cachedCanvas) {
+        // Use pre-rendered canvas for better performance
+        const baseSize = Math.max(this.size.x, this.size.y);
+        // Make emojis larger for better visibility (1.8x multiplier)
+        const emojiSize = baseSize * 1.8;
+        ctx.drawImage(
+          this.cachedCanvas,
+          -emojiSize / 2,
+          -emojiSize / 2,
+          emojiSize,
+          emojiSize
+        );
+      } else {
+        // Direct fallback
+        const baseSize = Math.max(this.size.x, this.size.y);
+        const emojiSize = baseSize * 1.8;
+        ctx.font = `${emojiSize}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(Confetti.CONFIG.symbol, 0, 0);
+      }
+    } else {
+      // Draw rectangle confetti (original behavior)
+      ctx.beginPath();
+      ctx.rect(-this.size.x / 2, -this.size.y / 2, this.size.x, this.size.y);
+      ctx.fillStyle = `hsla(${this.hue}deg, 90%, 65%, ${this.opacity}%)`;
+      ctx.fill();
+    }
+
     ctx.restore();
   }
 }
@@ -130,7 +199,7 @@ class Confetti {
   element!: HTMLElement;
   static CTX: CanvasRenderingContext2D | null = null;
 
-  constructor(id: string) {
+  constructor(id: string, symbol?: string | null) {
     if (!id) {
       throw new Error('Missing id');
     }
@@ -138,6 +207,9 @@ class Confetti {
     this.bursts = [];
     this.time = new Date().getTime();
     this.delta_time = 0;
+    if (symbol !== undefined) {
+      Confetti.CONFIG.symbol = symbol ?? null;
+    }
     this.setupCanvasContext();
     this.setupElement(id);
     window.requestAnimationFrame(this.update);
@@ -176,6 +248,10 @@ class Confetti {
       throw new Error("Input must be of type 'boolean'");
     }
     Confetti.CONFIG.destroy_target = destroy;
+  }
+
+  setSymbol(symbol: string | null): void {
+    Confetti.CONFIG.symbol = symbol;
   }
 
   setupCanvasContext(): void {
@@ -258,27 +334,46 @@ class Confetti {
 type ConfettiProps = {
   id: string;
   config?: Config;
+  tooltip?: boolean;
+  symbol?: string | null;
   children: ReactElement;
 };
 
-const ConfettiComponent: React.FC<ConfettiProps> = ({ id, children }) => {
+const ConfettiComponent: React.FC<ConfettiProps> = ({
+  id,
+  children,
+  tooltip = true,
+  symbol = null,
+}) => {
   const confettiRef = useRef<Confetti | null>(null);
 
   useEffect(() => {
     if (id) {
-      confettiRef.current = new Confetti(id);
+      confettiRef.current = new Confetti(id, symbol);
 
       confettiRef.current.destroyTarget(false);
     }
     return () => {
       confettiRef.current = null;
     };
-  }, [id]);
+  }, [id, symbol]);
 
-  return (
+  return !tooltip ? (
     <div id={id} className='flex'>
       {children}
     </div>
+  ) : (
+    <Tooltip delayDuration={0}>
+      <TooltipTrigger asChild>
+        <div id={id} className='flex'>
+          {children}
+        </div>
+      </TooltipTrigger>
+
+      <TooltipContent side='top' sideOffset={5}>
+        Celebrate with confetti! 🎉
+      </TooltipContent>
+    </Tooltip>
   );
 };
 

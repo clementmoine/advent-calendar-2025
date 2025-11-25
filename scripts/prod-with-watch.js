@@ -33,7 +33,7 @@ function main() {
   console.log('📝 Building games configuration...');
 
   // D'abord, générer la config des jeux
-  const buildGames = runCommand('npm', ['run', 'build:games']);
+  const buildGames = runCommand('pnpm', ['run', 'build:games']);
 
   buildGames.on('exit', code => {
     if (code === 0) {
@@ -41,7 +41,7 @@ function main() {
 
       // Ensuite, construire le dictionnaire
       console.log('📚 Building dictionary snapshot...');
-      const buildDictionary = runCommand('npm', ['run', 'build:dictionary']);
+      const buildDictionary = runCommand('pnpm', ['run', 'build:dictionary']);
 
       buildDictionary.on('exit', dictCode => {
         if (dictCode === 0) {
@@ -59,14 +59,14 @@ function main() {
               console.log('🌐 Starting Next.js production server...');
 
               // Lancer le serveur de production
-              let nextServer = runCommand('npm', ['start']);
+              let nextServer = runCommand('pnpm', ['start']);
 
               // Watch les fichiers source pour rebuilder
               console.log('👀 Watching for file changes...');
-              const watchGames = runCommand('npm', ['run', 'dev:watch-games'], {
+              const watchGames = runCommand('pnpm', ['run', 'dev:watch-games'], {
                 stdio: 'pipe',
               });
-              const watchDictionary = runCommand('npm', [
+              const watchDictionary = runCommand('pnpm', [
                 'run',
                 'dev:watch-dictionary',
               ], {
@@ -111,13 +111,13 @@ function main() {
                 }
 
                 // Build les jeux et le dictionnaire d'abord
-                const buildGames = runCommand('npm', ['run', 'build:games'], {
+                const buildGames = runCommand('pnpm', ['run', 'build:games'], {
                   stdio: 'pipe',
                 });
 
                 buildGames.on('exit', gamesCode => {
                   if (gamesCode === 0) {
-                    const buildDict = runCommand('npm', ['run', 'build:dictionary'], {
+                    const buildDict = runCommand('pnpm', ['run', 'build:dictionary'], {
                       stdio: 'pipe',
                     });
 
@@ -131,11 +131,11 @@ function main() {
                           isRebuilding = false;
                           if (rebuildCode === 0) {
                             console.log('✅ Rebuild completed, restarting server...');
-                            nextServer = runCommand('npm', ['start']);
+                            nextServer = runCommand('pnpm', ['start']);
                           } else {
                             console.error('❌ Rebuild failed, keeping old server');
                             // Redémarrer quand même le serveur avec l'ancien build
-                            nextServer = runCommand('npm', ['start']);
+                            nextServer = runCommand('pnpm', ['start']);
                           }
                         });
                       } else {

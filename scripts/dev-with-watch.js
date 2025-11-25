@@ -32,7 +32,7 @@ function main() {
   console.log('📝 Building games configuration...');
 
   // D'abord, générer la config des jeux
-  const buildGames = runCommand('npm', ['run', 'build:games']);
+  const buildGames = runCommand('pnpm', ['run', 'build:games']);
 
   buildGames.on('exit', code => {
     if (code === 0) {
@@ -40,7 +40,7 @@ function main() {
 
       // Ensuite, construire le dictionnaire avant de démarrer le serveur
       console.log('📚 Building dictionary snapshot...');
-      const buildDictionary = runCommand('npm', ['run', 'build:dictionary']);
+      const buildDictionary = runCommand('pnpm', ['run', 'build:dictionary']);
 
       buildDictionary.on('exit', dictCode => {
         if (dictCode === 0) {
@@ -48,15 +48,15 @@ function main() {
 
           // Puis lancer Next.js et les watchers en parallèle
           console.log('🌐 Starting Next.js development server...');
-          const nextDev = runCommand('npm', ['run', 'dev:next'], {
+          const nextDev = runCommand('pnpm', ['run', 'dev:next'], {
             stdio: 'inherit',
           });
 
           console.log('👀 Starting games watcher...');
-          const gamesWatcher = runCommand('npm', ['run', 'dev:watch-games']);
+          const gamesWatcher = runCommand('pnpm', ['run', 'dev:watch-games']);
 
           console.log('👀 Starting dictionary watcher...');
-          const dictionaryWatcher = runCommand('npm', [
+          const dictionaryWatcher = runCommand('pnpm', [
             'run',
             'dev:watch-dictionary',
           ]);
@@ -68,7 +68,7 @@ function main() {
               console.log('🔄 Games updated, restarting Next.js...');
               nextDev.kill('SIGTERM');
               setTimeout(() => {
-                const newNextDev = runCommand('npm', ['run', 'dev:next'], {
+                const newNextDev = runCommand('pnpm', ['run', 'dev:next'], {
                   stdio: 'inherit',
                 });
                 Object.assign(nextDev, newNextDev);
@@ -83,7 +83,7 @@ function main() {
               console.log('🔄 Dictionary updated, restarting Next.js...');
               nextDev.kill('SIGTERM');
               setTimeout(() => {
-                const newNextDev = runCommand('npm', ['run', 'dev:next'], {
+                const newNextDev = runCommand('pnpm', ['run', 'dev:next'], {
                   stdio: 'inherit',
                 });
                 Object.assign(nextDev, newNextDev);

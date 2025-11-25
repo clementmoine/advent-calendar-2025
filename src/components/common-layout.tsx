@@ -8,7 +8,9 @@ import { useArdoise } from '@/contexts/ardoise-context';
 import { usePiggyBank } from '@/contexts/piggy-bank-context';
 import ArdoiseDrawer from '@/components/ardoise-drawer';
 import PiggyBank from '@/components/piggy-bank';
-import { useEffect, useState } from 'react';
+import ConfettiComponent from '@/components/confetti';
+import { useEffect, useState, useRef } from 'react';
+import { TypeAnimation } from 'react-type-animation';
 
 interface CommonLayoutProps {
   children: React.ReactNode;
@@ -35,6 +37,8 @@ export default function CommonLayout({
   const { openArdoise, closeArdoise, isArdoiseOpen } = useArdoise();
   const { coins } = usePiggyBank();
   const [isPiggyBankOpen, setIsPiggyBankOpen] = useState(false);
+  const [animated, setAnimated] = useState<boolean>(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleBack = () => {
     if (backButtonHref) {
@@ -56,6 +60,18 @@ export default function CommonLayout({
       }
     };
   }, []);
+
+  const handleMouseEnter = () => {
+    timeoutRef.current = setTimeout(() => setAnimated(true), 2000);
+  };
+
+  const handleMouseLeave = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    setAnimated(false);
+  };
 
   return (
     <div
@@ -86,9 +102,48 @@ export default function CommonLayout({
                     className='flex items-center gap-2 hover:opacity-80 transition-opacity duration-200'
                   >
                     <Sparkles className='size-6 text-emerald-600 dark:text-emerald-400' />
-                    <span className='text-xl font-bold text-slate-900 dark:text-slate-100'>
-                      Calendrier de l&apos;Avent
-                    </span>
+                    {animated ? (
+                      <ConfettiComponent
+                        id='advent-title'
+                        tooltip={false}
+                        symbol='❄️'
+                      >
+                        <TypeAnimation
+                          sequence={[
+                            'Ho!',
+                            () => {
+                              document.getElementById('advent-title')?.click();
+                            },
+                            200,
+                            'Ho! Ho!',
+                            () => {
+                              document.getElementById('advent-title')?.click();
+                            },
+                            200,
+                            'Ho! Ho! Ho!',
+                            () => {
+                              document.getElementById('advent-title')?.click();
+                            },
+                            200,
+                            "Calendrier de l'Avent",
+                            () => {
+                              setAnimated(false);
+                            },
+                          ]}
+                          wrapper='span'
+                          cursor={true}
+                          className='text-xl font-bold text-slate-900 dark:text-slate-100'
+                        />
+                      </ConfettiComponent>
+                    ) : (
+                      <span
+                        onMouseEnter={handleMouseEnter}
+                        onMouseLeave={handleMouseLeave}
+                        className='text-xl font-bold text-slate-900 dark:text-slate-100'
+                      >
+                        Calendrier de l&apos;Avent
+                      </span>
+                    )}
                   </button>
                 )}
               </div>
