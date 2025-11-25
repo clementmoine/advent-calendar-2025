@@ -349,6 +349,7 @@ const SudokuGame = memo(function SudokuGame({
           e.preventDefault();
 
           // Fonction pour trouver la prochaine cellule modifiable dans une direction
+          // avec support du wrapping (traverser les bords)
           const findNextModifiableCell = (
             startRow: number,
             startCol: number,
@@ -356,44 +357,124 @@ const SudokuGame = memo(function SudokuGame({
           ) => {
             let currentRow = startRow;
             let currentCol = startCol;
-            const maxAttempts = 9; // Max 9 attempts to avoid infinite loops
+            const maxAttempts = 81; // Max attempts pour parcourir toute la grille
             let attempts = 0;
+            const visited = new Set<string>();
 
             while (attempts < maxAttempts) {
+              // Déplacer dans la direction avec wrapping
               switch (direction) {
                 case 'ArrowUp':
-                  currentRow = Math.max(0, currentRow - 1);
+                  currentRow = currentRow - 1;
+                  if (currentRow < 0) {
+                    currentRow = 8; // Wrap to bottom
+                  }
                   break;
                 case 'ArrowDown':
-                  currentRow = Math.min(8, currentRow + 1);
+                  currentRow = currentRow + 1;
+                  if (currentRow > 8) {
+                    currentRow = 0; // Wrap to top
+                  }
                   break;
                 case 'ArrowLeft':
-                  currentCol = Math.max(0, currentCol - 1);
+                  currentCol = currentCol - 1;
+                  if (currentCol < 0) {
+                    currentCol = 8; // Wrap to right
+                  }
                   break;
                 case 'ArrowRight':
-                  currentCol = Math.min(8, currentCol + 1);
+                  currentCol = currentCol + 1;
+                  if (currentCol > 8) {
+                    currentCol = 0; // Wrap to left
+                  }
                   break;
               }
+
+              const cellKey = `${currentRow},${currentCol}`;
+
+              // Si on est revenu à la case de départ, on a fait le tour complet
+              if (currentRow === startRow && currentCol === startCol) {
+                // On a fait le tour complet sans trouver de case modifiable
+                // Chercher la case modifiable la plus proche dans la direction
+                return findClosestModifiableCell(
+                  startRow,
+                  startCol,
+                  direction
+                );
+              }
+
+              // Éviter les boucles infinies
+              if (visited.has(cellKey)) {
+                break;
+              }
+              visited.add(cellKey);
 
               // Stop if we found a modifiable cell
               if (!isInitialCell(currentRow, currentCol)) {
                 return { row: currentRow, col: currentCol };
               }
 
-              // Stop if we hit the edge and the cell is protected
-              if (
-                (direction === 'ArrowUp' && currentRow === 0) ||
-                (direction === 'ArrowDown' && currentRow === 8) ||
-                (direction === 'ArrowLeft' && currentCol === 0) ||
-                (direction === 'ArrowRight' && currentCol === 8)
-              ) {
-                break;
-              }
-
               attempts++;
             }
 
-            return null; // No modifiable cell found
+            // Si on n'a rien trouvé après maxAttempts, chercher la plus proche
+            return findClosestModifiableCell(startRow, startCol, direction);
+          };
+
+          // Fonction pour trouver la case modifiable la plus proche dans une direction
+          // en tenant compte du wrapping
+          const findClosestModifiableCell = (
+            startRow: number,
+            startCol: number,
+            direction: string
+          ) => {
+            const candidates: Array<{ row: number; col: number; dist: number }> =
+              [];
+
+            // Parcourir toutes les cases modifiables et calculer la distance avec wrapping
+            for (let r = 0; r < 9; r++) {
+              for (let c = 0; c < 9; c++) {
+                if (!isInitialCell(r, c)) {
+                  let dist = 0;
+                  switch (direction) {
+                    case 'ArrowUp':
+                      dist =
+                        startRow >= r
+                          ? startRow - r
+                          : startRow + (9 - r); // Wrap distance
+                      break;
+                    case 'ArrowDown':
+                      dist =
+                        r >= startRow
+                          ? r - startRow
+                          : (9 - startRow) + r; // Wrap distance
+                      break;
+                    case 'ArrowLeft':
+                      dist =
+                        startCol >= c
+                          ? startCol - c
+                          : startCol + (9 - c); // Wrap distance
+                      break;
+                    case 'ArrowRight':
+                      dist =
+                        c >= startCol
+                          ? c - startCol
+                          : (9 - startCol) + c; // Wrap distance
+                      break;
+                  }
+                  candidates.push({ row: r, col: c, dist });
+                }
+              }
+            }
+
+            // Trouver la case avec la distance minimale
+            if (candidates.length === 0) return null;
+
+            const closest = candidates.reduce((min, candidate) =>
+              candidate.dist < min.dist ? candidate : min
+            );
+
+            return { row: closest.row, col: closest.col };
           };
 
           const nextCell = findNextModifiableCell(
