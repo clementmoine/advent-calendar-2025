@@ -14,8 +14,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Advent Calendar 2025',
-  description: 'Discover a new game every day until Christmas!',
+  title: "Calendrier de l'Avent 2025",
+  description: "Découvrez un nouveau jeu chaque jour jusqu'au 25 décembre !",
 };
 
 export default function RootLayout({
