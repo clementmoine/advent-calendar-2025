@@ -9,6 +9,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const prettier = require('prettier');
 
 const GAMES_DIR = path.join(__dirname, '../src/games');
 const OUTPUT_FILE = path.join(
@@ -78,7 +79,7 @@ function discoverGames() {
   return games;
 }
 
-function generateGamesConfig(games) {
+async function generateGamesConfig(games) {
   const imports = games
     .map(
       game =>
@@ -119,7 +120,13 @@ export const DISCOVERED_GAMES = [${games.map(g => `'${g.id}'`).join(', ')}] as c
 export type DiscoveredGameId = (typeof DISCOVERED_GAMES)[number];
 `;
 
-  fs.writeFileSync(OUTPUT_FILE, content);
+  // Format with Prettier so lint/format are happy
+  const formatted = await prettier.format(content, {
+    parser: 'typescript',
+    singleQuote: true,
+  });
+
+  fs.writeFileSync(OUTPUT_FILE, formatted);
   console.log(`📝 Generated games config: ${OUTPUT_FILE}`);
 }
 
@@ -146,8 +153,14 @@ function main() {
     games.map(g => g.id).join(', ')
   );
 
-  generateGamesConfig(games);
-  console.log('✅ Games configuration generated!');
+  generateGamesConfig(games)
+    .then(() => {
+      console.log('✅ Games configuration generated!');
+    })
+    .catch(error => {
+      console.error('❌ Failed to generate games configuration:', error);
+      if (!isWatchMode) process.exit(1);
+    });
 
   if (isWatchMode) {
     console.log('🔄 Watching for changes...');

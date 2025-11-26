@@ -42,9 +42,9 @@ export type KnownGameId = (typeof DISCOVERED_GAMES)[number];
 export const getDifficultyFromDay = (
   day: number
 ): 'easy' | 'medium' | 'hard' => {
-  if (day <= 8) return 'easy'; // Jours 1-8 : Facile
-  if (day <= 16) return 'medium'; // Jours 9-16 : Modéré
-  return 'hard'; // Jours 17-25 : Difficile
+  if (day <= 8) return 'easy'; // Days 1-8 : Easy
+  if (day <= 16) return 'medium'; // Days 9-16: Medium difficulty
+  return 'hard'; // Days 17-25 : Hard
 };
 
 /**

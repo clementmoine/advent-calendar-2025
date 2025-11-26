@@ -73,10 +73,10 @@ const GameViewer = memo(function GameViewer({
       setIsModalOpen(modal !== null);
     };
 
-    // Vérifier immédiatement
+    // Validate immediately
     checkModal();
 
-    // Observer les changements dans le DOM
+    // Observe changes in the DOM
     const observer = new MutationObserver(checkModal);
     observer.observe(document.body, {
       childList: true,
@@ -238,7 +238,7 @@ const GameViewer = memo(function GameViewer({
     setWon(true);
     setGameOver(true);
 
-    // Le mot est déjà disponible depuis le SSR, on l'affiche immédiatement
+    // The word is already available from SSR, display it immediately
     if (gameData?.day && gameData?.dailyWord) {
       console.log('🔓 Unlocking word immediately:', gameData.dailyWord);
 

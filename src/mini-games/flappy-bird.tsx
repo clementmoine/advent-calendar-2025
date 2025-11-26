@@ -755,7 +755,7 @@ export default function FlappyBird({ onWin, onLose, onClose }: FlappyProps) {
                 </>
               )}
 
-              {/* Game Over overlay (aligné avec Snake/Breakout) */}
+              {/* Game Over overlay (aligned with Snake/Breakout style) */}
               {!running && !dying && (
                 <div className='absolute inset-0 bg-black/75 flex flex-col items-center justify-center text-center z-[80]'>
                   <div className='text-3xl md:text-4xl font-extrabold text-red-500 drop-shadow-sm'>

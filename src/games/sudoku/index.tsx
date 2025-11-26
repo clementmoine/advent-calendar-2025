@@ -362,7 +362,7 @@ const SudokuGame = memo(function SudokuGame({
             const visited = new Set<string>();
 
             while (attempts < maxAttempts) {
-              // Déplacer dans la direction avec wrapping
+              // Move in the given direction with wrapping
               switch (direction) {
                 case 'ArrowUp':
                   currentRow = currentRow - 1;
@@ -392,14 +392,14 @@ const SudokuGame = memo(function SudokuGame({
 
               const cellKey = `${currentRow},${currentCol}`;
 
-              // Si on est revenu à la case de départ, on a fait le tour complet
+              // If we are back to the starting cell, we've looped over everything
               if (currentRow === startRow && currentCol === startCol) {
                 // On a fait le tour complet sans trouver de case modifiable
                 // Chercher la case modifiable la plus proche dans la direction
                 return findClosestModifiableCell(startRow, startCol, direction);
               }
 
-              // Éviter les boucles infinies
+              // Avoid infinite loops
               if (visited.has(cellKey)) {
                 break;
               }
@@ -413,7 +413,7 @@ const SudokuGame = memo(function SudokuGame({
               attempts++;
             }
 
-            // Si on n'a rien trouvé après maxAttempts, chercher la plus proche
+            // If nothing was found after maxAttempts, search for the closest one
             return findClosestModifiableCell(startRow, startCol, direction);
           };
 

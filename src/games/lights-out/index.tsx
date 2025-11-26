@@ -193,7 +193,7 @@ const LightsOut = memo(function LightsOut({ onWin, gameData }: GameProps) {
           let currentRow = startRow;
           let currentCol = startCol;
 
-          // Déplacer dans la direction avec wrapping
+          // Move in the given direction with wrapping
           switch (direction) {
             case 'ArrowUp':
               currentRow = currentRow - 1;

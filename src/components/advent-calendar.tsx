@@ -106,7 +106,7 @@ export default function AdventCalendar() {
 
   // Relaunch the animation when coming back to the home page
   useEffect(() => {
-    // Détecter si on revient d'une page de jeu (pas de currentGame et pas de showWordSlate)
+    // Detect if we are coming back from a game page (no currentGame and no showWordSlate)
     if (!currentGame && calendarData) {
       setShowAnimation(true);
       const timer = setTimeout(() => setShowAnimation(false), 2000);

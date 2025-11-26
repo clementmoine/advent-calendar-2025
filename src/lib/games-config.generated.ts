@@ -29,16 +29,22 @@ export const GAMES_CONFIG: Record<
     component: () => import('../games/mots-meles'),
     metadata: MOTS_MELES_METADATA,
   },
-  'sudoku': {
+  sudoku: {
     component: () => import('../games/sudoku'),
     metadata: SUDOKU_METADATA,
   },
-  'tusmo': {
+  tusmo: {
     component: () => import('../games/tusmo'),
     metadata: TUSMO_METADATA,
   },
 };
 
-export const DISCOVERED_GAMES = ['2048', 'lights-out', 'mots-meles', 'sudoku', 'tusmo'] as const;
+export const DISCOVERED_GAMES = [
+  '2048',
+  'lights-out',
+  'mots-meles',
+  'sudoku',
+  'tusmo',
+] as const;
 
 export type DiscoveredGameId = (typeof DISCOVERED_GAMES)[number];

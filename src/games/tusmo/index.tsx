@@ -246,7 +246,7 @@ const TusmoGame = memo(function TusmoGame({
         });
       };
 
-      // (indice "mal placée" retiré)
+      // (hint "misplaced letter" removed)
 
       const revealAbsent = () => {
         if (gameOver) return;
@@ -393,7 +393,7 @@ const TusmoGame = memo(function TusmoGame({
         }
       });
     });
-    // (plus de lettres fixées par hint "bien placée" – option retirée)
+    // (no more letters fixed by "well placed" hint – option removed)
 
     return (
       <div className='flex gap-2 mb-2'>
@@ -405,8 +405,8 @@ const TusmoGame = memo(function TusmoGame({
           const shouldShowRed =
             isCurrentWordInvalid && currentGuess.length === wordLength;
 
-          // Considérée correcte uniquement si validée par un essai précédent
-          // ou si révélée par un indice (gérée ailleurs) – pas juste en tapant
+          // Considered correct only if validated by a previous guess
+          // or revealed by a hint (handled elsewhere) – not just by typing
 
           let classes =
             'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100';
@@ -414,11 +414,11 @@ const TusmoGame = memo(function TusmoGame({
             classes =
               'border-red-500 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200';
           } else if (currentLetter) {
-            // Pendant la saisie: toujours bleu pour clarté
+            // While typing: always blue for clarity
             classes =
               'border-blue-500 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200';
           } else if (correctLetter) {
-            // En dehors de la saisie: montrer les lettres validées/révélées en vert
+            // Outside of typing: show validated/revealed letters in green
             classes =
               'border-emerald-500 bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200';
           }
