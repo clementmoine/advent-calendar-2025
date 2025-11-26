@@ -21,6 +21,7 @@ import Tetris from '@/mini-games/tetris';
 import FlappyBird from '@/mini-games/flappy-bird';
 import SlotMachine from '@/mini-games/slot-machine';
 import Snake from '@/mini-games/snake';
+import Breakout from '@/mini-games/breakout';
 
 interface MiniGame {
   id: string;
@@ -115,6 +116,16 @@ const MINI_GAMES: MiniGame[] = [
     reward: 2,
     difficulty: 'medium',
     icon: '🐍',
+    completed: false,
+    unlocked: true,
+  },
+  {
+    id: 'breakout',
+    name: 'Breakout',
+    description: 'Cassez les briques',
+    reward: 1,
+    difficulty: 'medium',
+    icon: '🎮',
     completed: false,
     unlocked: true,
   },
@@ -357,6 +368,19 @@ export default function PiggyBank({ onClose }: PiggyBankProps) {
           <Snake
             onWin={() => {
               // Give 1 coin per apple eaten (endless mode)
+              addCoins(1);
+            }}
+            onLose={() => {
+              // Let user close manually
+            }}
+            onClose={() => setSelectedGame(null)}
+          />
+        )}
+
+        {selectedGame === 'breakout' && (
+          <Breakout
+            onWin={() => {
+              // Give 1 coin per brick broken
               addCoins(1);
             }}
             onLose={() => {
