@@ -20,6 +20,7 @@ import Simon from '@/mini-games/simon';
 import Tetris from '@/mini-games/tetris';
 import FlappyBird from '@/mini-games/flappy-bird';
 import SlotMachine from '@/mini-games/slot-machine';
+import Snake from '@/mini-games/snake';
 
 interface MiniGame {
   id: string;
@@ -104,6 +105,16 @@ const MINI_GAMES: MiniGame[] = [
     reward: 20,
     difficulty: 'easy',
     icon: '🎰',
+    completed: false,
+    unlocked: true,
+  },
+  {
+    id: 'snake',
+    name: 'Snake',
+    description: 'Mangez pour grandir',
+    reward: 2,
+    difficulty: 'medium',
+    icon: '🐍',
     completed: false,
     unlocked: true,
   },
@@ -334,6 +345,19 @@ export default function PiggyBank({ onClose }: PiggyBankProps) {
           <FlappyBird
             onWin={() => {
               completeMiniGame('flappy-bird');
+            }}
+            onLose={() => {
+              // Let user close manually
+            }}
+            onClose={() => setSelectedGame(null)}
+          />
+        )}
+
+        {selectedGame === 'snake' && (
+          <Snake
+            onWin={() => {
+              // Give 1 coin per apple eaten (endless mode)
+              addCoins(1);
             }}
             onLose={() => {
               // Let user close manually
