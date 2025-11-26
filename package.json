@@ -2,6 +2,7 @@
   "name": "avent2025",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@10.23.0",
   "scripts": {
     "dev": "concurrently \"pnpm run dev:watch-games\" \"pnpm run dev:next\"",
     "dev:next": "next dev --turbopack",

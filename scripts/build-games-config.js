@@ -30,6 +30,12 @@ function discoverGames() {
   for (const entry of entries) {
     if (entry.isDirectory()) {
       const gameId = entry.name;
+      
+      // Ignore NAS system directories (e.g., @eaDir created by Synology)
+      if (gameId.startsWith('@')) {
+        continue;
+      }
+      
       const gamePath = path.join(GAMES_DIR, gameId);
 
       // Vérifier que le jeu a les fichiers requis

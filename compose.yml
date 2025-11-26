@@ -1,0 +1,14 @@
+services:
+  avent2025:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: avent2025
+    ports:
+      - '4040:4040'
+    environment:
+      - NODE_ENV=production
+      - TZ=Europe/Paris
+    volumes:
+      - ${ROOT:-.}/config/avent2025:/config
+    restart: unless-stopped

@@ -24,6 +24,10 @@
 .DS_Store
 *.pem
 
+# NAS system directories (Synology, etc.)
+@eaDir/
+@*/
+
 # debug
 npm-debug.log*
 yarn-debug.log*
