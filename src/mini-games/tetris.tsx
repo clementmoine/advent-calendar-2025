@@ -380,7 +380,7 @@ export default function Tetris({ onWin, onLose, onClose }: TetrisProps) {
   const [, setScore] = useState<number>(0);
   const [gameOver, setGameOver] = useState<boolean>(false);
   const [isPaused, setIsPaused] = useState<boolean>(false);
-  const [, setLinesCleared] = useState<number>(0);
+  const [linesCleared, setLinesCleared] = useState<number>(0);
   // Keep last piece visible on game over
   const [frozenPiece, setFrozenPiece] = useState<Piece | null>(null);
   const [frozenPosition, setFrozenPosition] = useState<Position | null>(null);
@@ -1030,45 +1030,66 @@ export default function Tetris({ onWin, onLose, onClose }: TetrisProps) {
         <div className='px-6'>
           <div className='flex gap-4 justify-center'>
             {/* Board */}
-            <div className='grid grid-cols-10 gap-0.5 p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-900'>
-              {renderBoard().map((row, y) =>
-                row.map((cell, x) => {
-                  const isShadow =
-                    typeof cell === 'string' && cell.startsWith('shadow-');
-                  const shadowColor = isShadow
-                    ? cell.replace('shadow-', '')
-                    : '';
-                  const actualColor = isShadow ? '' : cell;
-                  const getShadowOutline = (color: string) => {
-                    if (!isShadow) return '';
-                    if (color.includes('sky-500'))
-                      return 'outline-sky-500/30 dark:outline-sky-400/30';
-                    if (color.includes('yellow-400'))
-                      return 'outline-yellow-400/30 dark:outline-yellow-300/30';
-                    if (color.includes('purple-600'))
-                      return 'outline-purple-600/30 dark:outline-purple-500/30';
-                    if (color.includes('green-500'))
-                      return 'outline-green-500/30 dark:outline-green-400/30';
-                    if (color.includes('red-500'))
-                      return 'outline-red-500/30 dark:outline-red-400/30';
-                    if (color.includes('orange-400'))
-                      return 'outline-orange-400/30 dark:outline-orange-300/30';
-                    if (color.includes('blue-600'))
-                      return 'outline-blue-600/30 dark:outline-blue-500/30';
-                    return 'outline-cyan-500/30 dark:outline-cyan-400/30';
-                  };
+            <div className='relative p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-900'>
+              <div className='grid grid-cols-10 gap-0.5'>
+                {renderBoard().map((row, y) =>
+                  row.map((cell, x) => {
+                    const isShadow =
+                      typeof cell === 'string' && cell.startsWith('shadow-');
+                    const shadowColor = isShadow
+                      ? cell.replace('shadow-', '')
+                      : '';
+                    const actualColor = isShadow ? '' : cell;
+                    const getShadowOutline = (color: string) => {
+                      if (!isShadow) return '';
+                      if (color.includes('sky-500'))
+                        return 'outline-sky-500/30 dark:outline-sky-400/30';
+                      if (color.includes('yellow-400'))
+                        return 'outline-yellow-400/30 dark:outline-yellow-300/30';
+                      if (color.includes('purple-600'))
+                        return 'outline-purple-600/30 dark:outline-purple-500/30';
+                      if (color.includes('green-500'))
+                        return 'outline-green-500/30 dark:outline-green-400/30';
+                      if (color.includes('red-500'))
+                        return 'outline-red-500/30 dark:outline-red-400/30';
+                      if (color.includes('orange-400'))
+                        return 'outline-orange-400/30 dark:outline-orange-300/30';
+                      if (color.includes('blue-600'))
+                        return 'outline-blue-600/30 dark:outline-blue-500/30';
+                      return 'outline-cyan-500/30 dark:outline-cyan-400/30';
+                    };
 
-                  return (
-                    <div
-                      key={`${y}-${x}`}
-                      className={`w-4 h-4 relative rounded-sm ${actualColor || ''} ${
-                        isShadow
-                          ? `outline outline-[1px] ${getShadowOutline(shadowColor)} outline-offset-[-1px]`
-                          : ''
-                      }`}
-                    />
-                  );
-                })
+                    return (
+                      <div
+                        key={`${y}-${x}`}
+                        className={`w-4 h-4 relative rounded-sm ${actualColor || ''} ${
+                          isShadow
+                            ? `outline outline-[1px] ${getShadowOutline(
+                                shadowColor
+                              )} outline-offset-[-1px]`
+                            : ''
+                        }`}
+                      />
+                    );
+                  })
+                )}
+              </div>
+
+              {/* Game Over overlay (aligné avec Snake/Breakout) */}
+              {gameOver && (
+                <div className='absolute inset-0 bg-black/75 flex flex-col items-center justify-center text-center z-10'>
+                  <div className='text-3xl md:text-4xl font-extrabold text-red-500 drop-shadow-sm'>
+                    GAME OVER
+                  </div>
+                  <div className='mt-3 text-lg font-semibold text-amber-300'>
+                    {linesCleared} pièce{linesCleared > 1 ? 's' : ''} gagnée
+                    {linesCleared > 1 ? 's' : ''}
+                  </div>
+                  <div className='mt-4 text-sm md:text-base text-white'>
+                    <div>Appuyez sur une touche</div>
+                    <div>pour recommencer</div>
+                  </div>
+                </div>
               )}
             </div>
 

@@ -724,35 +724,51 @@ export default function FlappyBird({ onWin, onLose, onClose }: FlappyProps) {
                       </div>
                     );
                   })}
+                  {/* Impact cross for debug */}
+                  {impact && (
+                    <div
+                      className='absolute pointer-events-none'
+                      style={{ left: impact.x, top: impact.y, zIndex: 70 }}
+                    >
+                      <div
+                        style={{
+                          position: 'absolute',
+                          left: -8,
+                          top: 0,
+                          width: 16,
+                          height: 1,
+                          background: 'rgba(239,68,68,0.7)',
+                        }}
+                      />
+                      <div
+                        style={{
+                          position: 'absolute',
+                          left: 0,
+                          top: -8,
+                          width: 1,
+                          height: 16,
+                          background: 'rgba(239,68,68,0.7)',
+                        }}
+                      />
+                    </div>
+                  )}
                 </>
               )}
 
-              {/* Impact cross for debug */}
-              {showHitbox && impact && (
-                <div
-                  className='absolute pointer-events-none'
-                  style={{ left: impact.x, top: impact.y, zIndex: 70 }}
-                >
-                  <div
-                    style={{
-                      position: 'absolute',
-                      left: -8,
-                      top: 0,
-                      width: 16,
-                      height: 1,
-                      background: 'rgba(239,68,68,0.7)',
-                    }}
-                  />
-                  <div
-                    style={{
-                      position: 'absolute',
-                      left: 0,
-                      top: -8,
-                      width: 1,
-                      height: 16,
-                      background: 'rgba(239,68,68,0.7)',
-                    }}
-                  />
+              {/* Game Over overlay (aligné avec Snake/Breakout) */}
+              {!running && !dying && (
+                <div className='absolute inset-0 bg-black/75 flex flex-col items-center justify-center text-center z-[80]'>
+                  <div className='text-3xl md:text-4xl font-extrabold text-red-500 drop-shadow-sm'>
+                    GAME OVER
+                  </div>
+                  <div className='mt-3 text-lg font-semibold text-amber-300'>
+                    {score} pièce{score > 1 ? 's' : ''} gagnée
+                    {score > 1 ? 's' : ''}
+                  </div>
+                  <div className='mt-4 text-sm md:text-base text-white'>
+                    <div>Appuyez sur une touche</div>
+                    <div>pour recommencer</div>
+                  </div>
                 </div>
               )}
             </div>

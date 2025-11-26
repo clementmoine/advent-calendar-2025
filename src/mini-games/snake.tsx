@@ -365,9 +365,8 @@ export default function Snake({ onWin, onLose, onClose }: SnakeProps) {
         </DialogHeader>
 
         <div className='flex flex-col items-center gap-4'>
-          {/* Game grid */}
           <div
-            className='flex-1 overflow-hidden rounded-md border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-900 select-none p-2'
+            className='relative flex-1 overflow-hidden rounded-md border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-900 select-none p-2'
             style={{
               width: `${GRID_SIZE * 24 + 16}px`,
               maxWidth: '100%',
@@ -385,6 +384,22 @@ export default function Snake({ onWin, onLose, onClose }: SnakeProps) {
                 return renderCell(x, y);
               })}
             </div>
+
+            {gameOver && (
+              <div className='absolute inset-0 bg-black/75 flex flex-col items-center justify-center text-center'>
+                <div className='text-3xl md:text-4xl font-extrabold text-red-500 drop-shadow-sm'>
+                  GAME OVER
+                </div>
+                <div className='mt-3 text-lg font-semibold text-amber-300'>
+                  {applesEaten} pièce{applesEaten > 1 ? 's' : ''} gagnée
+                  {applesEaten > 1 ? 's' : ''}
+                </div>
+                <div className='mt-4 text-sm md:text-base text-white'>
+                  <div>Appuyez sur une touche</div>
+                  <div>pour recommencer</div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Control keyboard */}
