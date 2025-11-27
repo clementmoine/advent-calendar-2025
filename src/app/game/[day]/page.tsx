@@ -41,7 +41,7 @@ async function getGameData(day: number): Promise<GameData> {
       id: gameConfig.metadata.id,
       name: gameConfig.metadata.name,
       description: gameConfig.metadata.description,
-      difficulty: getActualDifficulty(gameConfig.metadata.difficulty, day),
+      difficulty: getActualDifficulty(gameConfig.metadata.difficulty, day, gameType),
       estimatedTime: gameConfig.metadata.estimatedTime,
       instructions: gameConfig.metadata.instructions,
       args: process.env[`DAY_${day}_ARGS`],

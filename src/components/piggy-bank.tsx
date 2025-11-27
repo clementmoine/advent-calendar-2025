@@ -161,12 +161,14 @@ export default function PiggyBank({ onClose }: PiggyBankProps) {
     setSelectedGame(gameId);
   };
 
-  const completeMiniGame = (gameId: string) => {
+  const completeMiniGame = (gameId: string, customReward?: number) => {
     const game = miniGames.find(g => g.id === gameId);
     if (!game) return;
 
     // Don't mark as completed, just add coins
-    addCoins(game.reward);
+    // Use customReward if provided (e.g., for per-line rewards in Tetris)
+    const reward = customReward !== undefined ? customReward : game.reward;
+    addCoins(reward);
     // Let user close manually to see animation
   };
 
@@ -329,8 +331,10 @@ export default function PiggyBank({ onClose }: PiggyBankProps) {
 
         {selectedGame === 'tetris' && (
           <Tetris
-            onWin={() => {
-              completeMiniGame('tetris');
+            onWin={(linesCleared?: number) => {
+              // Give 1 coin per line cleared (or default reward if not specified)
+              const reward = linesCleared !== undefined ? linesCleared : 5;
+              completeMiniGame('tetris', reward);
               // Let user close manually
             }}
             onLose={() => {

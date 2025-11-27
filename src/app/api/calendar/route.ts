@@ -45,7 +45,7 @@ export async function GET() {
         id: `${gameType}-${day}`,
         name: gameConfig.metadata.name,
         description: gameConfig.metadata.description,
-        difficulty: getActualDifficulty(gameConfig.metadata.difficulty, day),
+        difficulty: getActualDifficulty(gameConfig.metadata.difficulty, day, gameType),
         estimatedTime: gameConfig.metadata.estimatedTime,
         instructions: gameConfig.metadata.instructions,
         hasEnvWord: Boolean(process.env[`DAY_${day}`]),

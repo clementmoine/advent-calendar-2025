@@ -24,7 +24,11 @@ const Game2048 = memo(function Game2048({
   gameData,
 }: GameProps) {
   const day = gameData?.day || 1;
-  const [difficulty] = useState<Difficulty>(getDifficultyFromDay(day));
+  // Use difficulty from gameMetadata if available, otherwise fallback to getDifficultyFromDay
+  const difficultyFromMetadata = gameData?.gameMetadata?.difficulty as Difficulty | undefined;
+  const [difficulty] = useState<Difficulty>(
+    difficultyFromMetadata || getDifficultyFromDay(day)
+  );
   const [grid, setGrid] = useState<number[][]>([]);
   const [gameOver, setGameOver] = useState(false);
   const [won, setWon] = useState(false);

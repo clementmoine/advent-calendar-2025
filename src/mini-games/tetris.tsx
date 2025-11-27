@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import Keyboard from '@/components/keyboard';
 
 interface TetrisProps {
-  onWin: () => void;
+  onWin: (linesCleared?: number) => void;
   onLose: () => void;
   onClose: () => void;
 }
@@ -393,7 +393,6 @@ export default function Tetris({ onWin, onLose, onClose }: TetrisProps) {
   // Track last move type to detect T-spins (rotation -> lock)
   const lastActionWasRotationRef = useRef(false);
   const backToBackRef = useRef(false);
-  const rewardGivenRef = useRef(false);
 
   // stable refs for callbacks
   const onWinRef = useRef(onWin);
@@ -504,11 +503,10 @@ export default function Tetris({ onWin, onLose, onClose }: TetrisProps) {
 
         setScore(s => s + points);
         setLinesCleared(l => l + lines);
-        // Award reward only once per game (after first line cleared)
-        if (!rewardGivenRef.current && lines > 0) {
-          rewardGivenRef.current = true;
+        // Award reward: 1 coin per line cleared
+        if (lines > 0) {
           setTimeout(() => {
-            onWinRef.current();
+            onWinRef.current(lines);
           }, 0);
         }
       }
@@ -542,7 +540,6 @@ export default function Tetris({ onWin, onLose, onClose }: TetrisProps) {
     backToBackRef.current = false;
     lastActionWasRotationRef.current = false;
     onGroundRef.current = false;
-    rewardGivenRef.current = false;
     if (lockTimerRef.current) {
       clearTimeout(lockTimerRef.current);
       lockTimerRef.current = null;

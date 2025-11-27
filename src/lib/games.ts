@@ -57,12 +57,52 @@ export const getGameTypeFromDay = (day: number): string => {
 };
 
 /**
+ * Counts how many times the 2048 game appears up to and including the given day.
+ * Returns the difficulty for 2048 based on its occurrence order:
+ * - 1st occurrence: easy
+ * - 2nd occurrence: medium
+ * - 3rd occurrence: hard
+ * - Then cycles back: 4th = easy, 5th = medium, etc.
+ */
+export const get2048DifficultyFromDay = (
+  day: number
+): 'easy' | 'medium' | 'hard' => {
+  const year = new Date().getFullYear();
+  let occurrenceCount = 0;
+  
+  for (let d = 1; d <= day; d++) {
+    const dow = new Date(year, 11, d).getDay(); // 0 Sun, 6 Sat
+    const isWeekday = dow !== 0 && dow !== 6;
+    if (isWeekday && !isDayDisabled(d)) {
+      const rotationIndex = getRotationIndexForDay(d);
+      const gameType = getGameTypeFromDay(rotationIndex);
+      if (gameType === '2048') {
+        occurrenceCount++;
+      }
+    }
+  }
+  
+  // Map occurrence to difficulty: 1st = easy, 2nd = medium, 3rd = hard, then cycles
+  const difficultyIndex = ((occurrenceCount - 1) % 3);
+  if (difficultyIndex === 0) return 'easy';
+  if (difficultyIndex === 1) return 'medium';
+  return 'hard';
+};
+
+/**
  * Computes the effective difficulty for a game (handles 'dynamic').
+ * For 2048, uses a special function that assigns easy/medium/hard based on occurrence order.
  */
 export const getActualDifficulty = (
   gameDifficulty: 'easy' | 'medium' | 'hard' | 'dynamic',
-  day: number
+  day: number,
+  gameType?: string
 ): 'easy' | 'medium' | 'hard' => {
+  // Special handling for 2048: use occurrence-based difficulty
+  if (gameType === '2048' && gameDifficulty === 'dynamic') {
+    return get2048DifficultyFromDay(day);
+  }
+  
   if (gameDifficulty === 'dynamic') {
     return getDifficultyFromDay(day);
   }
