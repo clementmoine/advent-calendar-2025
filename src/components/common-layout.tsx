@@ -9,6 +9,7 @@ import { usePiggyBank } from '@/contexts/piggy-bank-context';
 import ArdoiseDrawer from '@/components/ardoise-drawer';
 import PiggyBank from '@/components/piggy-bank';
 import ConfettiComponent from '@/components/confetti';
+import IntroModal from '@/components/intro-modal';
 import { useEffect, useState, useRef } from 'react';
 import { TypeAnimation } from 'react-type-animation';
 
@@ -231,6 +232,9 @@ export default function CommonLayout({
       {isPiggyBankOpen && (
         <PiggyBank onClose={() => setIsPiggyBankOpen(false)} />
       )}
+
+      {/* Intro modal */}
+      <IntroModal />
     </div>
   );
 }

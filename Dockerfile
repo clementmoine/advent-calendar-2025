@@ -48,10 +48,13 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV TZ=Europe/Paris
 
 # Automatically leverage output traces to reduce image size
-# Note: public directory is already included in .next/standalone/public by Next.js
+# Note: public directory should be included in .next/standalone/public by Next.js
+# but we copy it explicitly to ensure it's present
 # https://nextjs.org/docs/advanced-features/output-file-tracing
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
+# Copy public directory explicitly (Next.js should include it in standalone, but we ensure it's there)
+COPY --from=builder /app/public ./public
 
 # Create directory for config
 RUN mkdir -p /config
