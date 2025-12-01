@@ -21,7 +21,9 @@ export function useGameProgress() {
   // Listen to slate reset event in debug mode
   useEffect(() => {
     const handleResetArdoise = () => {
-      console.log('🧹 Resetting ardoise - clearing all progress');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🧹 Resetting ardoise - clearing all progress');
+      }
       const emptyProgress: GameProgress = {
         completedDays: {},
         phraseOrder: [],
@@ -46,7 +48,9 @@ export function useGameProgress() {
   // Mark a day as completed
   const completeDay = useCallback(
     (day: number, word: string, attempts: number) => {
-      console.log('🎯 completeDay called:', { day, word, attempts });
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🎯 completeDay called:', { day, word, attempts });
+      }
       setProgress(prev => {
         const newProgress = { ...prev };
         newProgress.completedDays[day] = {
@@ -60,7 +64,9 @@ export function useGameProgress() {
           newProgress.phraseOrder.push(day);
         }
 
-        console.log('📊 New progress:', newProgress);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('📊 New progress:', newProgress);
+        }
         return newProgress;
       });
     },

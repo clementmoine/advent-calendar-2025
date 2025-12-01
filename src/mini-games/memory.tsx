@@ -44,7 +44,6 @@ export default function Memory({ onWin, onClose }: MemoryProps) {
 
   const initializeCards = useCallback(() => {
     // Immediately reset all states
-    console.log('Restarting game, setting gameOver to false');
     setGameOver(false);
     setFlippedCards([]);
     setMoves(0);

@@ -251,25 +251,27 @@ const GameViewer = memo(function GameViewer({
 
   // Win callback
   const handleWin = useCallback(() => {
-    console.log('🎉 Game won:', { gameId, day: gameData?.day });
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🎉 Game won:', { gameId, day: gameData?.day });
+    }
     setWon(true);
     setGameOver(true);
 
     // The word is already available from SSR, display it immediately
     if (gameData?.day && gameData?.dailyWord) {
-      console.log('🔓 Unlocking word immediately:', gameData.dailyWord);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔓 Unlocking word immediately:', gameData.dailyWord);
+      }
 
-      // // DEBUG: Always treat as first completion for testing
-      // // Check if this is the first time completing this day
+      // Check if this is the first time completing this day
       const wasAlreadyCompleted = checkDayCompleted(gameData.day);
-      // setIsFirstCompletion(true); // DEBUG: Always true
       setIsFirstCompletion(!wasAlreadyCompleted);
 
       // Complete the day
       completeDay(gameData.day, gameData.dailyWord, 1);
       setUnlockedWord(gameData.dailyWord);
 
-      // DEBUG: Always award 20 coins
+      // Award coins for completion
       addCoins(20);
     }
   }, [
@@ -283,7 +285,9 @@ const GameViewer = memo(function GameViewer({
 
   // Lose callback
   const handleLose = useCallback(() => {
-    console.log('💀 Game lost:', { gameId, day: gameData?.day });
+    if (process.env.NODE_ENV === 'development') {
+      console.log('💀 Game lost:', { gameId, day: gameData?.day });
+    }
     setWon(false);
     setGameOver(true);
   }, [gameId, gameData?.day]);

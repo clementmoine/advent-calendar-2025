@@ -109,7 +109,6 @@ const WordSlate = memo(function WordSlate({ onStatsChange }: WordSlateProps) {
 
   // Reload words when loading completes, phrase order changes, or progress changes
   useEffect(() => {
-    console.log('🔄 WordSlate useEffect triggered:', { isLoading, progress });
     if (!isLoading) {
       // Compute directly instead of using getAllDays to avoid dependency issues
       const allDays: {
@@ -156,8 +155,6 @@ const WordSlate = memo(function WordSlate({ onStatsChange }: WordSlateProps) {
       }
 
       const finalDays = reorderedDays;
-
-      console.log('📝 Calculated all days:', finalDays);
       setWords(finalDays);
     }
   }, [isLoading, progress]);

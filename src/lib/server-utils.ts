@@ -20,9 +20,12 @@ export async function getDailyWord(day: number): Promise<string> {
   const wordLength = 4 + (day % 5); // 4, 5, 6, 7, 8 lettres en rotation
   const randomWord = getRandomWordByLength(wordLength);
 
-  console.log(
-    `🎲 Generated random word for day ${day}: ${randomWord} (length: ${wordLength})`
-  );
+  // Log word generation in development only
+  if (process.env.NODE_ENV === 'development') {
+    console.log(
+      `🎲 Generated random word for day ${day}: ${randomWord} (length: ${wordLength})`
+    );
+  }
   return randomWord;
 }
 
@@ -36,6 +39,9 @@ export async function validateGameWin(
 ): Promise<boolean> {
   // For now, we trust the frontend
   // In a real app, we would check victory conditions on the server side
-  console.log(`✅ Validating ${gameId} win for day ${day}:`, gameData);
+  // Log validation in development only
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`✅ Validating ${gameId} win for day ${day}:`, gameData);
+  }
   return true;
 }

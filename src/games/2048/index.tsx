@@ -130,11 +130,6 @@ const Game2048 = memo(function Game2048({
   // Synchroniser l'animation des nouvelles tuiles avec le changement de grid
   useEffect(() => {
     if (pendingNewTiles.size > 0) {
-      console.log(
-        '🎬 Déclenchement animation nouvelles tuiles:',
-        Array.from(pendingNewTiles)
-      );
-
       // Increment animation key to force re-render
       setTileAnimationKeys(prev => {
         const newMap = new Map(prev);
@@ -148,10 +143,6 @@ const Game2048 = memo(function Game2048({
       setNewTiles(prev => {
         const newSet = new Set(prev);
         pendingNewTiles.forEach(tileKey => newSet.add(tileKey));
-        console.log(
-          '🎬 Nouvelles tuiles ajoutées à newTiles:',
-          Array.from(newSet)
-        );
         return newSet;
       });
 
@@ -160,10 +151,6 @@ const Game2048 = memo(function Game2048({
         setNewTiles(prev => {
           const newSet = new Set(prev);
           pendingNewTiles.forEach(tileKey => newSet.delete(tileKey));
-          console.log(
-            '🎬 Nouvelles tuiles supprimées de newTiles:',
-            Array.from(newSet)
-          );
           return newSet;
         });
         setPendingNewTiles(new Set());
@@ -205,22 +192,13 @@ const Game2048 = memo(function Game2048({
   // Check if target is reached
   const checkWin = useCallback(
     (currentGrid: number[][]) => {
-      console.log('🎯 checkWin called, target:', target);
       for (let row = 0; row < config.size; row++) {
         for (let col = 0; col < config.size; col++) {
           if (currentGrid[row][col] === target) {
-            console.log(
-              '🏆 WIN DETECTED! Found target',
-              target,
-              'at',
-              row,
-              col
-            );
             return true;
           }
         }
       }
-      console.log('❌ No win detected');
       return false;
     },
     [config.size, target]
@@ -996,13 +974,7 @@ const Game2048 = memo(function Game2048({
                     const isInitial = initialTiles.has(tileKey);
 
                     if (isNew) {
-                      console.log('🎬 Animation détectée dans le rendu:', {
-                        tileKey,
-                        cell,
-                        isNew,
-                        isMerged,
-                        isInitial,
-                      });
+                      // Animation triggered for new tile
                     }
 
                     const animationKey = tileAnimationKeys.get(tileKey) || 0;

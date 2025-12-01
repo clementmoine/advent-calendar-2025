@@ -20,9 +20,6 @@ export const ThemeToggle = memo(function ThemeToggle() {
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    console.log('Current theme:', theme);
-  }, [theme]);
 
   const getCurrentIcon = () => {
     switch (theme) {
