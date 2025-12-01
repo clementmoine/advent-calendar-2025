@@ -83,7 +83,7 @@ const MINI_GAMES: MiniGame[] = [
     id: 'tetris',
     name: 'Tetris',
     description: 'Empilez les blocs',
-    reward: 5,
+    reward: 1,
     difficulty: 'hard',
     icon: '🧩',
     completed: false,
@@ -113,7 +113,7 @@ const MINI_GAMES: MiniGame[] = [
     id: 'snake',
     name: 'Snake',
     description: 'Mangez pour grandir',
-    reward: 2,
+    reward: 1,
     difficulty: 'medium',
     icon: '🐍',
     completed: false,
@@ -332,8 +332,8 @@ export default function PiggyBank({ onClose }: PiggyBankProps) {
         {selectedGame === 'tetris' && (
           <Tetris
             onWin={(linesCleared?: number) => {
-              // Give 1 coin per line cleared (or default reward if not specified)
-              const reward = linesCleared !== undefined ? linesCleared : 5;
+              // Give 1 coin per line cleared (or default reward of 1 if not specified)
+              const reward = linesCleared !== undefined ? linesCleared : 1;
               completeMiniGame('tetris', reward);
               // Let user close manually
             }}
