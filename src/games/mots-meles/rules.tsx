@@ -16,7 +16,7 @@ const MotsMelesRules = memo(function MotsMelesRules() {
 
       <div className='flex flex-col gap-3'>
         <div className='flex items-start gap-3'>
-          <div className='w-6 h-6 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-200 rounded-full flex items-center justify-center text-sm font-bold'>
+          <div className='w-6 h-6 shrink-0 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-200 rounded-full flex items-center justify-center text-sm font-bold'>
             1
           </div>
           <p className='text-sm text-slate-700 dark:text-slate-300'>
@@ -25,7 +25,7 @@ const MotsMelesRules = memo(function MotsMelesRules() {
         </div>
 
         <div className='flex items-start gap-3'>
-          <div className='w-6 h-6 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-200 rounded-full flex items-center justify-center text-sm font-bold'>
+          <div className='w-6 h-6 shrink-0 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-200 rounded-full flex items-center justify-center text-sm font-bold'>
             2
           </div>
           <p className='text-sm text-slate-700 dark:text-slate-300'>
@@ -35,7 +35,7 @@ const MotsMelesRules = memo(function MotsMelesRules() {
         </div>
 
         <div className='flex items-start gap-3'>
-          <div className='w-6 h-6 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-200 rounded-full flex items-center justify-center text-sm font-bold'>
+          <div className='w-6 h-6 shrink-0 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-200 rounded-full flex items-center justify-center text-sm font-bold'>
             3
           </div>
           <p className='text-sm text-slate-700 dark:text-slate-300'>
@@ -45,7 +45,7 @@ const MotsMelesRules = memo(function MotsMelesRules() {
         </div>
 
         <div className='flex items-start gap-3'>
-          <div className='w-6 h-6 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-200 rounded-full flex items-center justify-center text-sm font-bold'>
+          <div className='w-6 h-6 shrink-0 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-200 rounded-full flex items-center justify-center text-sm font-bold'>
             4
           </div>
           <p className='text-sm text-slate-700 dark:text-slate-300'>
@@ -58,7 +58,7 @@ const MotsMelesRules = memo(function MotsMelesRules() {
         </div>
 
         <div className='flex items-start space-x-3'>
-          <div className='w-6 h-6 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-200 rounded-full flex items-center justify-center text-sm font-bold'>
+          <div className='w-6 h-6 shrink-0 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-200 rounded-full flex items-center justify-center text-sm font-bold'>
             5
           </div>
           <p className='text-sm text-slate-700 dark:text-slate-300'>
