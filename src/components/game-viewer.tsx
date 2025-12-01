@@ -232,6 +232,23 @@ const GameViewer = memo(function GameViewer({
     return Boolean(detail.available);
   }, []);
 
+  type NonogramQueryDetail = { type: 'auto'; available: boolean };
+  const nonogramAvailable = useCallback((kind: 'auto') => {
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return false;
+    }
+    const el = document.querySelector('[data-game-component]');
+    if (!el) return false;
+    const detail: NonogramQueryDetail = { type: kind, available: false };
+    el.dispatchEvent(
+      new CustomEvent<NonogramQueryDetail>('nonogram-query-available', {
+        detail,
+        bubbles: true,
+      })
+    );
+    return Boolean(detail.available);
+  }, []);
+
   // Win callback
   const handleWin = useCallback(() => {
     console.log('🎉 Game won:', { gameId, day: gameData?.day });
@@ -368,7 +385,8 @@ const GameViewer = memo(function GameViewer({
             gameId === '2048' ||
             gameId === 'shifumi' ||
             gameId === 'mots-meles' ||
-            gameId === 'lights-out') &&
+            gameId === 'lights-out' ||
+            gameId === 'nonogram') &&
             gameData &&
             (() => {
               const dynamicDifficulty = displayConfig.difficulty;
@@ -527,6 +545,27 @@ const GameViewer = memo(function GameViewer({
                           );
                           el?.dispatchEvent(
                             new Event('motsmeles-reveal-word', {
+                              bubbles: true,
+                            })
+                          );
+                        },
+                      },
+                    ]
+                  : []),
+                ...(gameId === 'nonogram'
+                  ? [
+                      {
+                        id: 'nonogram-auto',
+                        label: 'Dévoiler une case',
+                        cost: 10,
+                        disabled: !nonogramAvailable('auto'),
+                        can: () => nonogramAvailable('auto'),
+                        action: () => {
+                          const el = document.querySelector(
+                            '[data-game-component]'
+                          );
+                          el?.dispatchEvent(
+                            new Event('nonogram-auto-cell', {
                               bubbles: true,
                             })
                           );

@@ -5,6 +5,7 @@
 import { GAME_2048_METADATA } from '../games/2048/config';
 import { LIGHTS_OUT_METADATA } from '../games/lights-out/config';
 import { MOTS_MELES_METADATA } from '../games/mots-meles/config';
+import { NONOGRAM_METADATA } from '../games/nonogram/config';
 import { SUDOKU_METADATA } from '../games/sudoku/config';
 import { TUSMO_METADATA } from '../games/tusmo/config';
 
@@ -29,6 +30,10 @@ export const GAMES_CONFIG: Record<
     component: () => import('../games/mots-meles'),
     metadata: MOTS_MELES_METADATA,
   },
+  nonogram: {
+    component: () => import('../games/nonogram'),
+    metadata: NONOGRAM_METADATA,
+  },
   sudoku: {
     component: () => import('../games/sudoku'),
     metadata: SUDOKU_METADATA,
@@ -43,6 +48,7 @@ export const DISCOVERED_GAMES = [
   '2048',
   'lights-out',
   'mots-meles',
+  'nonogram',
   'sudoku',
   'tusmo',
 ] as const;
