@@ -178,12 +178,34 @@ const Nonogram = memo(function Nonogram({
     return true;
   }, [grid, solution, size]);
 
+  // Detect win and reveal solution
   useEffect(() => {
     if (!isWon && checkWin()) {
+      // Marquer le puzzle comme terminé
       setIsWon(true);
-      onWin?.();
+
+      // Colorier les cases qui font partie de la solution
+      // sans effacer ce que le joueur a déjà bien rempli
+      setGrid(prev =>
+        prev.map((row, r) =>
+          row.map((cell, c) =>
+            solution[r][c] ? 'filled' : cell
+          )
+        )
+      );
     }
-  }, [grid, isWon, checkWin, onWin]);
+  }, [grid, isWon, checkWin, solution]);
+
+  // Trigger win callback after revealing the solution
+  useEffect(() => {
+    if (isWon && onWin) {
+      const timeout = setTimeout(() => {
+        onWin();
+      }, 1200);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [isWon, onWin]);
 
   const handleCellClick = useCallback(
     (r: number, c: number, isRightClick = false) => {
@@ -392,7 +414,9 @@ const Nonogram = memo(function Nonogram({
                       className={cn(
                         'w-8 h-8 rounded border-2 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-60',
                         cell === 'filled'
-                          ? 'bg-slate-900 dark:bg-slate-100 border-slate-700 dark:border-slate-300'
+                          ? isWon
+                            ? 'bg-emerald-500 border-emerald-600 dark:bg-emerald-600 dark:border-emerald-400'
+                            : 'bg-slate-900 dark:bg-slate-100 border-slate-700 dark:border-slate-300'
                           : cell === 'marked'
                             ? 'bg-slate-200 dark:bg-slate-700 border-slate-400 dark:border-slate-500'
                             : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700'
