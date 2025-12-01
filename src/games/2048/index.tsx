@@ -15,7 +15,7 @@ type Difficulty = 'easy' | 'medium' | 'hard';
 const GRID_CONFIG = {
   easy: { size: 3, target: 64 }, // 3x3, atteindre 64
   medium: { size: 4, target: 256 }, // 4x4, atteindre 256
-  hard: { size: 5, target: 1024 }, // 5x5, atteindre 1024
+  hard: { size: 5, target: 2048 }, // 5x5, atteindre 2048
 };
 
 const Game2048 = memo(function Game2048({

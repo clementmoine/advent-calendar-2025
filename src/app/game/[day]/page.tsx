@@ -8,6 +8,7 @@ import GamePageClient from '@/components/game-page-client';
 import { getDailyWord } from '@/lib/server-utils';
 import LockedDayMessage from '@/components/locked-day-message';
 import DisabledDayMessage from '@/components/disabled-day-message';
+import GameSelector from '@/components/game-selector';
 
 interface GameData {
   day: number;
@@ -25,13 +26,34 @@ interface GameData {
   dailyWord: string;
 }
 
-async function getGameData(day: number): Promise<GameData> {
+async function getGameData(day: number, selectedGame?: string): Promise<GameData> {
   // Retrieve the daily word server-side (secure)
   const dailyWord = await getDailyWord(day);
 
   // Determine game type based on the day (shared logic)
-  const gameType = getGameTypeForBusinessDay(day);
+  // If a game is selected via query param and DAY_X_GAME is "all", use it
+  const baseGameType = getGameTypeForBusinessDay(day);
+  let gameType = baseGameType;
+  
+  // If base game type is "all", we need a selected game
+  if (baseGameType === 'all') {
+    if (selectedGame && Object.keys(GAMES_CONFIG).includes(selectedGame)) {
+      gameType = selectedGame;
+    } else {
+      // No valid game selected, will show selector
+      gameType = 'all';
+    }
+  }
+  
+  // If gameType is still "all", we can't get game config yet
+  if (gameType === 'all') {
+    throw new Error('Game selector needed');
+  }
+  
   const gameConfig = GAMES_CONFIG[gameType];
+  
+  // Use the day-based difficulty, not the game's default difficulty
+  const dayDifficulty = getActualDifficulty('dynamic', day, gameType);
 
   return {
     day,
@@ -41,7 +63,7 @@ async function getGameData(day: number): Promise<GameData> {
       id: gameConfig.metadata.id,
       name: gameConfig.metadata.name,
       description: gameConfig.metadata.description,
-      difficulty: getActualDifficulty(gameConfig.metadata.difficulty, day, gameType),
+      difficulty: dayDifficulty,
       estimatedTime: gameConfig.metadata.estimatedTime,
       instructions: gameConfig.metadata.instructions,
       args: process.env[`DAY_${day}_ARGS`],
@@ -52,10 +74,12 @@ async function getGameData(day: number): Promise<GameData> {
 
 interface GamePageProps {
   params: Promise<{ day: string }>;
+  searchParams: Promise<{ game?: string }>;
 }
 
-export default async function GamePage({ params }: GamePageProps) {
+export default async function GamePage({ params, searchParams }: GamePageProps) {
   const { day: dayParam } = await params;
+  const { game: selectedGame } = await searchParams;
   const day = parseInt(dayParam, 10);
 
   if (isNaN(day) || day < 1 || day > 25) {
@@ -85,9 +109,17 @@ export default async function GamePage({ params }: GamePageProps) {
     }
   }
 
+  // Check if we need to show the game selector
+  const baseGameType = getGameTypeForBusinessDay(day);
+  if (baseGameType === 'all' && !selectedGame) {
+    // Calculate the difficulty for the day (used for all games)
+    const dayDifficulty = getActualDifficulty('dynamic', day);
+    return <GameSelector day={day} difficulty={dayDifficulty} />;
+  }
+
   try {
     // Retrieve game data server-side (secure)
-    const gameData = await getGameData(day);
+    const gameData = await getGameData(day, selectedGame || undefined);
 
     // Dynamically load the game component
     const gameConfig = GAMES_CONFIG[gameData.gameType];
@@ -109,6 +141,12 @@ export default async function GamePage({ params }: GamePageProps) {
       />
     );
   } catch (error) {
+    // If error is "Game selector needed", show selector
+    if (error instanceof Error && error.message === 'Game selector needed') {
+      const dayDifficulty = getActualDifficulty('dynamic', day);
+      return <GameSelector day={day} difficulty={dayDifficulty} />;
+    }
+    
     console.error('Error loading game:', error);
     return (
       <div className='flex items-center justify-center min-h-screen'>

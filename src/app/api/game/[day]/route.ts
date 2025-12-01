@@ -49,6 +49,17 @@ export async function GET(
 
     // Determine the game type for this day, skipping disabled days in rotation
     const gameType = getGameTypeForBusinessDay(day);
+    
+    // If "all", return special indicator
+    if (gameType === 'all') {
+      return NextResponse.json({
+        day,
+        unlocked: true,
+        gameType: 'all',
+        requiresSelection: true,
+      });
+    }
+    
     const gameConfig = GAMES_CONFIG[gameType];
 
     const gameData = {

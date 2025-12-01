@@ -49,7 +49,7 @@ const Rules = () => {
           </div>
           <p className='text-sm text-slate-700 dark:text-slate-300'>
             <strong>Objectif</strong> : Atteindre la tuile cible (64, 256, ou
-            1024 selon la difficulté)
+            2048 selon la difficulté)
           </p>
         </div>
       </div>

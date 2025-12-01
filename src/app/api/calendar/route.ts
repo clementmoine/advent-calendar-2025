@@ -39,19 +39,39 @@ export async function GET() {
     for (let day = 1; day <= 25; day++) {
       const disabledLabel = process.env[`DAY_${day}_DISABLED`] || null;
       const gameType = getGameTypeForBusinessDay(day);
-      const gameConfig = GAMES_CONFIG[gameType];
 
-      games[day] = {
-        id: `${gameType}-${day}`,
-        name: gameConfig.metadata.name,
-        description: gameConfig.metadata.description,
-        difficulty: getActualDifficulty(gameConfig.metadata.difficulty, day, gameType),
-        estimatedTime: gameConfig.metadata.estimatedTime,
-        instructions: gameConfig.metadata.instructions,
-        hasEnvWord: Boolean(process.env[`DAY_${day}`]),
-        args: process.env[`DAY_${day}_ARGS`],
-        disabledLabel,
-      };
+      // Handle "all" case - show special name
+      if (gameType === 'all') {
+        const dayDifficulty = getActualDifficulty('dynamic', day);
+        games[day] = {
+          id: `all-${day}`,
+          name: 'Choix libre',
+          description: 'Sélectionnez le jeu que vous souhaitez jouer',
+          difficulty: dayDifficulty,
+          estimatedTime: 'Variable',
+          instructions: [],
+          hasEnvWord: Boolean(process.env[`DAY_${day}`]),
+          args: process.env[`DAY_${day}_ARGS`],
+          disabledLabel,
+        };
+      } else {
+        const gameConfig = GAMES_CONFIG[gameType];
+        games[day] = {
+          id: `${gameType}-${day}`,
+          name: gameConfig.metadata.name,
+          description: gameConfig.metadata.description,
+          difficulty: getActualDifficulty(
+            gameConfig.metadata.difficulty,
+            day,
+            gameType
+          ),
+          estimatedTime: gameConfig.metadata.estimatedTime,
+          instructions: gameConfig.metadata.instructions,
+          hasEnvWord: Boolean(process.env[`DAY_${day}`]),
+          args: process.env[`DAY_${day}_ARGS`],
+          disabledLabel,
+        };
+      }
     }
 
     // Business days logic: only open on weekdays (Mon-Fri)

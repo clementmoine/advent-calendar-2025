@@ -425,7 +425,7 @@ const GameViewer = memo(function GameViewer({
               const getTargetFromDifficulty = (difficulty: string): number => {
                 if (difficulty === 'easy') return 64;
                 if (difficulty === 'medium') return 256;
-                return 1024;
+                return 2048;
               };
               const target = getTargetFromDifficulty(displayConfig.difficulty);
 

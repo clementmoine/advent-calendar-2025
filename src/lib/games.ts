@@ -150,8 +150,30 @@ export const getRotationIndexForDay = (day: number): number => {
 
 /**
  * Derives the game type for a given business day number, skipping disabled days.
+ * Checks DAY_X_GAME env var first:
+ * - If set to "all", returns "all" (player will choose)
+ * - If set to a valid game name, returns that game
+ * - Otherwise uses rotation logic
  */
 export const getGameTypeForBusinessDay = (day: number): string => {
+  const envGame = process.env[`DAY_${day}_GAME`];
+  
+  // If "all", return special value for game selection
+  if (envGame === 'all') {
+    return 'all';
+  }
+  
+  // If a specific game is provided, validate and return it
+  if (envGame) {
+    const gameTypes = Object.keys(GAMES_CONFIG);
+    if (gameTypes.includes(envGame)) {
+      return envGame;
+    }
+    // Invalid game name, fall back to rotation
+    console.warn(`Invalid game name "${envGame}" for day ${day}, using rotation`);
+  }
+  
+  // Default: use rotation logic
   const rotationIndex = getRotationIndexForDay(day);
   return getGameTypeFromDay(rotationIndex);
 };
