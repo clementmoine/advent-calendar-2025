@@ -37,17 +37,25 @@ async function main() {
     if (leoProfanity.check(normalized)) continue;
     if (leoProfanity.check(normalizedLower)) continue;
 
+    // Only add if not already in the set (deduplicate)
+    if (wordsSet.has(normalized)) continue;
+    
     wordsSet.add(normalized);
     const len = normalized.length;
     const bucket = byLen.get(len) || [];
-    bucket.push(normalized);
+    // Double-check: don't add duplicates in bucket either
+    if (!bucket.includes(normalized)) {
+      bucket.push(normalized);
+    }
     byLen.set(len, bucket);
   }
 
   const all = Array.from(wordsSet).sort();
   const byLengthObj = {};
   for (const [len, arr] of byLen) {
-    byLengthObj[len] = arr.sort();
+    // Final deduplication pass: remove any remaining duplicates
+    const unique = Array.from(new Set(arr)).sort();
+    byLengthObj[len] = unique;
   }
 
   const snapshot = { all, byLength: byLengthObj };

@@ -171,8 +171,11 @@ export function getT9Suggestions(
   const bucket = WORDS_BY_LENGTH.get(targetLength) || [];
   const matchingWords = bucket.filter(word => word.startsWith(normalizedWord));
 
+  // Remove duplicates (should not happen but safety check)
+  const uniqueMatchingWords = Array.from(new Set(matchingWords));
+
   // If typed word is exactly a valid word, do not propose it
-  const filteredWords = matchingWords.filter(word => word !== normalizedWord);
+  const filteredWords = uniqueMatchingWords.filter(word => word !== normalizedWord);
 
   // If we have exact prefix matches, return them
   if (filteredWords.length > 0) {
