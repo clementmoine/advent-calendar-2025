@@ -40,7 +40,7 @@ function generatePuzzleSolution(size: number, rng: () => number): boolean[][] {
   const solution = Array.from({ length: size }, () =>
     Array.from({ length: size }, () => false)
   );
-  
+
   // Fill with random pattern (about 40-60% filled)
   const fillRate = 0.4 + rng() * 0.2;
   for (let r = 0; r < size; r++) {
@@ -48,7 +48,7 @@ function generatePuzzleSolution(size: number, rng: () => number): boolean[][] {
       solution[r][c] = rng() < fillRate;
     }
   }
-  
+
   // Apply some smoothing to make patterns more interesting
   for (let i = 0; i < size * 2; i++) {
     const r = Math.floor(rng() * size);
@@ -65,7 +65,7 @@ function generatePuzzleSolution(size: number, rng: () => number): boolean[][] {
       if (filledCount <= 1) solution[r][c] = false;
     }
   }
-  
+
   return solution;
 }
 
@@ -73,7 +73,7 @@ function generatePuzzleSolution(size: number, rng: () => number): boolean[][] {
 function calculateClues(line: boolean[]): number[] {
   const clues: number[] = [];
   let currentGroup = 0;
-  
+
   for (const cell of line) {
     if (cell) {
       currentGroup++;
@@ -84,18 +84,15 @@ function calculateClues(line: boolean[]): number[] {
       }
     }
   }
-  
+
   if (currentGroup > 0) {
     clues.push(currentGroup);
   }
-  
+
   return clues; // Return empty array if no filled cells
 }
 
-const Nonogram = memo(function Nonogram({
-  onWin,
-  gameData,
-}: GameProps) {
+const Nonogram = memo(function Nonogram({ onWin, gameData }: GameProps) {
   const day = gameData?.day || 1;
   const difficulty: Difficulty = getDifficultyFromDay(day);
   const size = getGridSizeForDifficulty(difficulty);
@@ -105,14 +102,14 @@ const Nonogram = memo(function Nonogram({
     const seedString = `nonogram-${day}-${difficulty}-${size}`;
     const rng = createRNG(seedString);
     const sol = generatePuzzleSolution(size, rng);
-    
+
     const rowCls = sol.map(row => calculateClues(row));
     const colCls: number[][] = [];
     for (let c = 0; c < size; c++) {
       const col = sol.map(row => row[c]);
       colCls.push(calculateClues(col));
     }
-    
+
     return { solution: sol, rowClues: rowCls, colClues: colCls };
   }, [day, difficulty, size]);
 
@@ -135,32 +132,34 @@ const Nonogram = memo(function Nonogram({
         const col = solution.map(row => row[c]);
         verifyColClues.push(calculateClues(col));
       }
-      
+
       // Log for debugging
       console.log('🔍 Nonogram debug:', {
         size,
-        solution: solution.map(row => row.map(c => c ? 'X' : '.').join('')),
+        solution: solution.map(row => row.map(c => (c ? 'X' : '.')).join('')),
         rowClues,
         verifyRowClues,
         colClues,
         verifyColClues,
       });
-      
+
       // Check if calculated clues match stored clues
-      const rowMatch = rowClues.every((clues, i) => 
-        JSON.stringify(clues) === JSON.stringify(verifyRowClues[i])
+      const rowMatch = rowClues.every(
+        (clues, i) =>
+          JSON.stringify(clues) === JSON.stringify(verifyRowClues[i])
       );
-      const colMatch = colClues.every((clues, i) => 
-        JSON.stringify(clues) === JSON.stringify(verifyColClues[i])
+      const colMatch = colClues.every(
+        (clues, i) =>
+          JSON.stringify(clues) === JSON.stringify(verifyColClues[i])
       );
-      
+
       if (!rowMatch || !colMatch) {
         console.error('⚠️ Nonogram solution mismatch!', {
           rowClues,
           verifyRowClues,
           colClues,
           verifyColClues,
-          solution: solution.map(row => row.map(c => c ? 'X' : '.').join('')),
+          solution: solution.map(row => row.map(c => (c ? 'X' : '.')).join('')),
         });
       }
     }
@@ -188,24 +187,16 @@ const Nonogram = memo(function Nonogram({
       // sans effacer ce que le joueur a déjà bien rempli
       setGrid(prev =>
         prev.map((row, r) =>
-          row.map((cell, c) =>
-            solution[r][c] ? 'filled' : cell
-          )
+          row.map((cell, c) => (solution[r][c] ? 'filled' : cell))
         )
       );
-    }
-  }, [grid, isWon, checkWin, solution]);
 
-  // Trigger win callback after revealing the solution
-  useEffect(() => {
-    if (isWon && onWin) {
-      const timeout = setTimeout(() => {
-        onWin();
+      // Delay to show the solution colored in green
+      setTimeout(() => {
+        onWin?.();
       }, 1200);
-
-      return () => clearTimeout(timeout);
     }
-  }, [isWon, onWin]);
+  }, [grid, isWon, checkWin, solution, onWin]);
 
   const handleCellClick = useCallback(
     (r: number, c: number, isRightClick = false) => {
@@ -323,14 +314,8 @@ const Nonogram = memo(function Nonogram({
   }, [grid, isWon, size, solution]);
 
   // Calculate max clues, but handle empty arrays properly
-  const maxRowClues = Math.max(
-    ...rowClues.map(c => c.length),
-    1
-  );
-  const maxColClues = Math.max(
-    ...colClues.map(c => c.length),
-    1
-  );
+  const maxRowClues = Math.max(...rowClues.map(c => c.length), 1);
+  const maxColClues = Math.max(...colClues.map(c => c.length), 1);
 
   return (
     <div className='flex flex-col gap-4 items-center' data-game-component>
@@ -360,7 +345,10 @@ const Nonogram = memo(function Nonogram({
                     // If we have maxColClues=3 and clues=[2,1], we want: empty, 2, 1
                     // So clueIdx should be: idx - (maxColClues - clues.length)
                     const clueIdx = idx - (maxColClues - clues.length);
-                    const clue = clueIdx >= 0 && clueIdx < clues.length ? clues[clueIdx] : null;
+                    const clue =
+                      clueIdx >= 0 && clueIdx < clues.length
+                        ? clues[clueIdx]
+                        : null;
                     return (
                       <div
                         key={`col-${col}-${idx}`}
@@ -387,7 +375,10 @@ const Nonogram = memo(function Nonogram({
                     // But we only have maxRowClues items, so: idx=0 -> empty, idx=1 -> clues[0]=1, idx=2 -> clues[1]=2
                     const padding = maxRowClues - clues.length;
                     const clueIdx = idx - padding;
-                    const clue = clueIdx >= 0 && clueIdx < clues.length ? clues[clueIdx] : null;
+                    const clue =
+                      clueIdx >= 0 && clueIdx < clues.length
+                        ? clues[clueIdx]
+                        : null;
                     return (
                       <div
                         key={`row-${r}-clue-${idx}`}

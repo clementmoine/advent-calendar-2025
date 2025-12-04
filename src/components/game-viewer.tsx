@@ -106,12 +106,6 @@ const GameViewer = memo(function GameViewer({
 
   // Check if this is the first time opening this game and show rules automatically
   useEffect(() => {
-    // Only for main games
-    const mainGames = ['2048', 'lights-out', 'mots-meles', 'sudoku', 'tusmo'];
-    if (!mainGames.includes(gameId)) {
-      return;
-    }
-
     // Check if rules have been seen for this game
     const storageKey = `game-rules-seen-${gameId}`;
     const hasSeenRules = localStorage.getItem(storageKey) === 'true';
