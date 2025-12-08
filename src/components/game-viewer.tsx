@@ -265,8 +265,10 @@ const GameViewer = memo(function GameViewer({
       completeDay(gameData.day, gameData.dailyWord, 1);
       setUnlockedWord(gameData.dailyWord);
 
-      // Award coins for completion
-      addCoins(20);
+      // Award coins only for first completion
+      if (!wasAlreadyCompleted) {
+        addCoins(20);
+      }
     }
   }, [
     gameId,
