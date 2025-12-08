@@ -26,7 +26,10 @@ interface GameData {
   dailyWord: string;
 }
 
-async function getGameData(day: number, selectedGame?: string): Promise<GameData> {
+async function getGameData(
+  day: number,
+  selectedGame?: string
+): Promise<GameData> {
   // Retrieve the daily word server-side (secure)
   const dailyWord = await getDailyWord(day);
 
@@ -34,7 +37,7 @@ async function getGameData(day: number, selectedGame?: string): Promise<GameData
   // If a game is selected via query param and DAY_X_GAME is "all", use it
   const baseGameType = getGameTypeForBusinessDay(day);
   let gameType = baseGameType;
-  
+
   // If base game type is "all", we need a selected game
   if (baseGameType === 'all') {
     if (selectedGame && Object.keys(GAMES_CONFIG).includes(selectedGame)) {
@@ -44,14 +47,14 @@ async function getGameData(day: number, selectedGame?: string): Promise<GameData
       gameType = 'all';
     }
   }
-  
+
   // If gameType is still "all", we can't get game config yet
   if (gameType === 'all') {
     throw new Error('Game selector needed');
   }
-  
+
   const gameConfig = GAMES_CONFIG[gameType];
-  
+
   // Use the day-based difficulty, not the game's default difficulty
   const dayDifficulty = getActualDifficulty('dynamic', day, gameType);
 
@@ -77,7 +80,10 @@ interface GamePageProps {
   searchParams: Promise<{ game?: string }>;
 }
 
-export default async function GamePage({ params, searchParams }: GamePageProps) {
+export default async function GamePage({
+  params,
+  searchParams,
+}: GamePageProps) {
   const { day: dayParam } = await params;
   const { game: selectedGame } = await searchParams;
   const day = parseInt(dayParam, 10);
@@ -102,9 +108,15 @@ export default async function GamePage({ params, searchParams }: GamePageProps) 
   const isDevelopment = process.env.NODE_ENV === 'development';
   if (!isDevelopment) {
     const today = new Date();
-    const businessDayIndex = getBusinessDayIndex(today);
-    if (day > businessDayIndex) {
-      const daysRemaining = day - businessDayIndex;
+    const isDecember = today.getMonth() === 11;
+    // In production, use calendar day (1-25) if in December, otherwise use business day index
+    const currentCalendarDay = isDecember ? today.getDate() : 0;
+    const maxAvailableDay = isDecember
+      ? currentCalendarDay
+      : getBusinessDayIndex(today);
+
+    if (day > maxAvailableDay) {
+      const daysRemaining = day - maxAvailableDay;
       return <LockedDayMessage daysRemaining={daysRemaining} day={day} />;
     }
   }
@@ -146,7 +158,7 @@ export default async function GamePage({ params, searchParams }: GamePageProps) 
       const dayDifficulty = getActualDifficulty('dynamic', day);
       return <GameSelector day={day} difficulty={dayDifficulty} />;
     }
-    
+
     console.error('Error loading game:', error);
     return (
       <div className='flex items-center justify-center min-h-screen'>

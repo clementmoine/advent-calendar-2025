@@ -345,7 +345,8 @@ const MotsMeles = ({ onWin, gameData }: GameProps) => {
       // For hard, prefer more diagonal words
       const isMedium = actualDifficulty === 'medium';
       const isHard = actualDifficulty === 'hard';
-      const needsDiagonal = (isMedium || isHard) && diagonalWordsPlaced < targetDiagonalWords;
+      const needsDiagonal =
+        (isMedium || isHard) && diagonalWordsPlaced < targetDiagonalWords;
       const needsReverse = (isMedium || isHard) && !hasReversePlaced;
       const needsIntersection =
         isHard && forcedIntersectionsCount < targetForcedIntersections;
@@ -473,15 +474,19 @@ const MotsMeles = ({ onWin, gameData }: GameProps) => {
           const reverseDirections = isHard
             ? config.allowDirections
             : (['horizontal', 'vertical'] as Direction[]);
-          
+
           // Shuffle directions to add variety
           const shuffledReverseDirections = fyShuffle(reverseDirections);
-          
+
           for (const direction of shuffledReverseDirections) {
             if (!config.allowDirections.includes(direction)) continue;
 
             // Try multiple random positions
-            for (let reverseAttempt = 0; reverseAttempt < 50; reverseAttempt++) {
+            for (
+              let reverseAttempt = 0;
+              reverseAttempt < 50;
+              reverseAttempt++
+            ) {
               const startRow = Math.floor(rng() * GRID_SIZE);
               const startCol = Math.floor(rng() * GRID_SIZE);
 
@@ -505,7 +510,10 @@ const MotsMeles = ({ onWin, gameData }: GameProps) => {
                 });
 
                 // Track if it's a diagonal
-                if (direction === 'diagonal-down' || direction === 'diagonal-up') {
+                if (
+                  direction === 'diagonal-down' ||
+                  direction === 'diagonal-up'
+                ) {
                   hasDiagonalPlaced = true;
                   diagonalWordsPlaced++;
                 }
@@ -607,22 +615,39 @@ const MotsMeles = ({ onWin, gameData }: GameProps) => {
     // Only generate extra words if manual words were NOT provided
     if (actualDifficulty === 'hard' && !manualWords) {
       // If diagonal constraint not met, try to place more words diagonally
-      if (diagonalWordsPlaced < targetDiagonalWords && wordPlacements.length < config.targetWordCount + 3) {
+      if (
+        diagonalWordsPlaced < targetDiagonalWords &&
+        wordPlacements.length < config.targetWordCount + 3
+      ) {
         for (let attempt = 0; attempt < 500; attempt++) {
           const wordLen =
             config.minWordLength +
-            Math.floor(rng() * (config.maxWordLength - config.minWordLength + 1));
+            Math.floor(
+              rng() * (config.maxWordLength - config.minWordLength + 1)
+            );
           const word = getRandomWord(wordLen);
-          if (!word || word.includes('-') || wordPlacements.some(wp => wp.word === word)) {
+          if (
+            !word ||
+            word.includes('-') ||
+            wordPlacements.some(wp => wp.word === word)
+          ) {
             continue;
           }
 
           // Try to place diagonally
-          for (const direction of ['diagonal-down', 'diagonal-up'] as Direction[]) {
+          for (const direction of [
+            'diagonal-down',
+            'diagonal-up',
+          ] as Direction[]) {
             for (let posAttempt = 0; posAttempt < 100; posAttempt++) {
               const startRow = Math.floor(rng() * GRID_SIZE);
               const startCol = Math.floor(rng() * GRID_SIZE);
-              const positions = canPlaceWord(word, startRow, startCol, direction);
+              const positions = canPlaceWord(
+                word,
+                startRow,
+                startCol,
+                direction
+              );
               if (positions) {
                 positions.forEach((pos, i) => {
                   grid[pos.row][pos.col] = word[i];
@@ -645,13 +670,22 @@ const MotsMeles = ({ onWin, gameData }: GameProps) => {
       }
 
       // If reverse constraint not met, try to place one more word in reverse
-      if (!hasReversePlaced && wordPlacements.length < config.targetWordCount + 3) {
+      if (
+        !hasReversePlaced &&
+        wordPlacements.length < config.targetWordCount + 3
+      ) {
         for (let attempt = 0; attempt < 500; attempt++) {
           const wordLen =
             config.minWordLength +
-            Math.floor(rng() * (config.maxWordLength - config.minWordLength + 1));
+            Math.floor(
+              rng() * (config.maxWordLength - config.minWordLength + 1)
+            );
           const word = getRandomWord(wordLen);
-          if (!word || word.includes('-') || wordPlacements.some(wp => wp.word === word)) {
+          if (
+            !word ||
+            word.includes('-') ||
+            wordPlacements.some(wp => wp.word === word)
+          ) {
             continue;
           }
 
@@ -660,7 +694,12 @@ const MotsMeles = ({ onWin, gameData }: GameProps) => {
             for (let posAttempt = 0; posAttempt < 100; posAttempt++) {
               const startRow = Math.floor(rng() * GRID_SIZE);
               const startCol = Math.floor(rng() * GRID_SIZE);
-              const positions = canPlaceWordReverse(word, startRow, startCol, direction);
+              const positions = canPlaceWordReverse(
+                word,
+                startRow,
+                startCol,
+                direction
+              );
               if (positions) {
                 positions.forEach((pos, i) => {
                   grid[pos.row][pos.col] = word[word.length - 1 - i];
@@ -671,7 +710,10 @@ const MotsMeles = ({ onWin, gameData }: GameProps) => {
                   direction,
                   found: false,
                 });
-                if (direction === 'diagonal-down' || direction === 'diagonal-up') {
+                if (
+                  direction === 'diagonal-down' ||
+                  direction === 'diagonal-up'
+                ) {
                   hasDiagonalPlaced = true;
                   diagonalWordsPlaced++;
                 }

@@ -163,63 +163,69 @@ const SudokuGame = memo(function SudokuGame({
   );
 
   // Check if grid is a valid sudoku solution (accepts any valid solution)
-  const isGridSolved = useCallback((currentGrid: number[][]) => {
-    // First check if grid is complete
-    for (let r = 0; r < 9; r++) {
-      for (let c = 0; c < 9; c++) {
-        if (currentGrid[r][c] === 0) return false;
-      }
-    }
-
-    // Check if all initial cells match (user can't change initial cells)
-    if (initialGrid.length > 0) {
+  const isGridSolved = useCallback(
+    (currentGrid: number[][]) => {
+      // First check if grid is complete
       for (let r = 0; r < 9; r++) {
         for (let c = 0; c < 9; c++) {
-          if (initialGrid[r][c] !== 0 && currentGrid[r][c] !== initialGrid[r][c]) {
-            return false;
+          if (currentGrid[r][c] === 0) return false;
+        }
+      }
+
+      // Check if all initial cells match (user can't change initial cells)
+      if (initialGrid.length > 0) {
+        for (let r = 0; r < 9; r++) {
+          for (let c = 0; c < 9; c++) {
+            if (
+              initialGrid[r][c] !== 0 &&
+              currentGrid[r][c] !== initialGrid[r][c]
+            ) {
+              return false;
+            }
           }
         }
       }
-    }
 
-    // Check if the grid is a valid sudoku solution
-    // Verify no duplicates in rows, columns, or 3x3 boxes
-    for (let r = 0; r < 9; r++) {
-      const rowSet = new Set<number>();
-      for (let c = 0; c < 9; c++) {
-        const value = currentGrid[r][c];
-        if (value < 1 || value > 9) return false;
-        if (rowSet.has(value)) return false;
-        rowSet.add(value);
-      }
-    }
-
-    for (let c = 0; c < 9; c++) {
-      const colSet = new Set<number>();
+      // Check if the grid is a valid sudoku solution
+      // Verify no duplicates in rows, columns, or 3x3 boxes
       for (let r = 0; r < 9; r++) {
-        const value = currentGrid[r][c];
-        if (colSet.has(value)) return false;
-        colSet.add(value);
+        const rowSet = new Set<number>();
+        for (let c = 0; c < 9; c++) {
+          const value = currentGrid[r][c];
+          if (value < 1 || value > 9) return false;
+          if (rowSet.has(value)) return false;
+          rowSet.add(value);
+        }
       }
-    }
 
-    for (let boxRow = 0; boxRow < 3; boxRow++) {
-      for (let boxCol = 0; boxCol < 3; boxCol++) {
-        const boxSet = new Set<number>();
-        for (let i = 0; i < 3; i++) {
-          for (let j = 0; j < 3; j++) {
-            const r = boxRow * 3 + i;
-            const c = boxCol * 3 + j;
-            const value = currentGrid[r][c];
-            if (boxSet.has(value)) return false;
-            boxSet.add(value);
+      for (let c = 0; c < 9; c++) {
+        const colSet = new Set<number>();
+        for (let r = 0; r < 9; r++) {
+          const value = currentGrid[r][c];
+          if (colSet.has(value)) return false;
+          colSet.add(value);
+        }
+      }
+
+      for (let boxRow = 0; boxRow < 3; boxRow++) {
+        for (let boxCol = 0; boxCol < 3; boxCol++) {
+          const boxSet = new Set<number>();
+          for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+              const r = boxRow * 3 + i;
+              const c = boxCol * 3 + j;
+              const value = currentGrid[r][c];
+              if (boxSet.has(value)) return false;
+              boxSet.add(value);
+            }
           }
         }
       }
-    }
 
-    return true;
-  }, [initialGrid]);
+      return true;
+    },
+    [initialGrid]
+  );
 
   // Check whether a cell is in conflict
   const isCellInConflict = (row: number, col: number) => {

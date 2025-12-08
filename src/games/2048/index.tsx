@@ -25,7 +25,9 @@ const Game2048 = memo(function Game2048({
 }: GameProps) {
   const day = gameData?.day || 1;
   // Use difficulty from gameMetadata if available, otherwise fallback to getDifficultyFromDay
-  const difficultyFromMetadata = gameData?.gameMetadata?.difficulty as Difficulty | undefined;
+  const difficultyFromMetadata = gameData?.gameMetadata?.difficulty as
+    | Difficulty
+    | undefined;
   const [difficulty] = useState<Difficulty>(
     difficultyFromMetadata || getDifficultyFromDay(day)
   );

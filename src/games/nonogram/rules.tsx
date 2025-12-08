@@ -10,7 +10,8 @@ const NonogramRules = memo(function NonogramRules() {
           Comment jouer au Nonogram
         </h3>
         <p className='text-sm text-blue-800 dark:text-blue-200'>
-          Remplissez la grille en suivant les nombres sur les côtés pour révéler le motif caché.
+          Remplissez la grille en suivant les nombres sur les côtés pour révéler
+          le motif caché.
         </p>
       </div>
 
@@ -20,8 +21,9 @@ const NonogramRules = memo(function NonogramRules() {
             1
           </div>
           <p className='text-sm text-slate-700 dark:text-slate-300'>
-            Les <strong>nombres en haut et à gauche</strong> indiquent les groupes de cases{' '}
-            <strong>consécutives remplies</strong> sur chaque ligne et chaque colonne.
+            Les <strong>nombres en haut et à gauche</strong> indiquent les
+            groupes de cases <strong>consécutives remplies</strong> sur chaque
+            ligne et chaque colonne.
           </p>
         </div>
 
@@ -30,9 +32,10 @@ const NonogramRules = memo(function NonogramRules() {
             2
           </div>
           <p className='text-sm text-slate-700 dark:text-slate-300'>
-            Entre deux groupes de nombres, il y a toujours <strong>au moins une case vide</strong>.{' '}
-            Par exemple, l&apos;indice <strong>2 1 3</strong> signifie : 2 cases remplies, au moins une vide,
-            1 remplie, au moins une vide, puis 3 remplies.
+            Entre deux groupes de nombres, il y a toujours{' '}
+            <strong>au moins une case vide</strong>. Par exemple, l&apos;indice{' '}
+            <strong>2 1 3</strong> signifie : 2 cases remplies, au moins une
+            vide, 1 remplie, au moins une vide, puis 3 remplies.
           </p>
         </div>
 
@@ -41,9 +44,10 @@ const NonogramRules = memo(function NonogramRules() {
             3
           </div>
           <p className='text-sm text-slate-700 dark:text-slate-300'>
-            <strong>Remplir une case</strong> : clic gauche (ou glisser) pour la marquer comme noire/remplie.{' '}
-            <strong>Marquer une case vide</strong> : clic droit ou Ctrl+Clic pour indiquer qu&apos;elle ne doit
-            pas être remplie.
+            <strong>Remplir une case</strong> : clic gauche (ou glisser) pour la
+            marquer comme noire/remplie. <strong>Marquer une case vide</strong>{' '}
+            : clic droit ou Ctrl+Clic pour indiquer qu&apos;elle ne doit pas
+            être remplie.
           </p>
         </div>
 
@@ -52,8 +56,9 @@ const NonogramRules = memo(function NonogramRules() {
             4
           </div>
           <p className='text-sm text-slate-700 dark:text-slate-300'>
-            La grille est <strong>terminée</strong> quand toutes les lignes et colonnes respectent exactement
-            leurs indices (ni plus, ni moins de cases remplies).
+            La grille est <strong>terminée</strong> quand toutes les lignes et
+            colonnes respectent exactement leurs indices (ni plus, ni moins de
+            cases remplies).
           </p>
         </div>
       </div>
@@ -63,9 +68,18 @@ const NonogramRules = memo(function NonogramRules() {
           💡 Conseils
         </h4>
         <ul className='text-sm text-amber-700 dark:text-amber-300 space-y-1'>
-          <li>• Commencez par les lignes/colonnes avec les <strong>plus grands nombres</strong>.</li>
-          <li>• Quand une ligne est complète, marquez le reste des cases comme vides pour clarifier.</li>
-          <li>• Croisez toujours les informations <strong>lignes ↔ colonnes</strong> pour progresser logiquement.</li>
+          <li>
+            • Commencez par les lignes/colonnes avec les{' '}
+            <strong>plus grands nombres</strong>.
+          </li>
+          <li>
+            • Quand une ligne est complète, marquez le reste des cases comme
+            vides pour clarifier.
+          </li>
+          <li>
+            • Croisez toujours les informations{' '}
+            <strong>lignes ↔ colonnes</strong> pour progresser logiquement.
+          </li>
         </ul>
       </div>
     </div>

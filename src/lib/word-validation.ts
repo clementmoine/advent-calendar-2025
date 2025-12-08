@@ -175,7 +175,9 @@ export function getT9Suggestions(
   const uniqueMatchingWords = Array.from(new Set(matchingWords));
 
   // If typed word is exactly a valid word, do not propose it
-  const filteredWords = uniqueMatchingWords.filter(word => word !== normalizedWord);
+  const filteredWords = uniqueMatchingWords.filter(
+    word => word !== normalizedWord
+  );
 
   // If we have exact prefix matches, return them
   if (filteredWords.length > 0) {

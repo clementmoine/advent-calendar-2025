@@ -88,9 +88,7 @@ export default function DisabledDayMessage({
             {disabledLabel}
           </motion.div>
         </motion.div>
-
       </motion.div>
     </div>
   );
 }
-

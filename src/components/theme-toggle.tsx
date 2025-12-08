@@ -20,7 +20,6 @@ export const ThemeToggle = memo(function ThemeToggle() {
     setMounted(true);
   }, []);
 
-
   const getCurrentIcon = () => {
     switch (theme) {
       case 'light':

@@ -69,7 +69,7 @@ export const get2048DifficultyFromDay = (
 ): 'easy' | 'medium' | 'hard' => {
   const year = new Date().getFullYear();
   let occurrenceCount = 0;
-  
+
   for (let d = 1; d <= day; d++) {
     const dow = new Date(year, 11, d).getDay(); // 0 Sun, 6 Sat
     const isWeekday = dow !== 0 && dow !== 6;
@@ -81,9 +81,9 @@ export const get2048DifficultyFromDay = (
       }
     }
   }
-  
+
   // Map occurrence to difficulty: 1st = easy, 2nd = medium, 3rd = hard, then cycles
-  const difficultyIndex = ((occurrenceCount - 1) % 3);
+  const difficultyIndex = (occurrenceCount - 1) % 3;
   if (difficultyIndex === 0) return 'easy';
   if (difficultyIndex === 1) return 'medium';
   return 'hard';
@@ -102,7 +102,7 @@ export const getActualDifficulty = (
   if (gameType === '2048' && gameDifficulty === 'dynamic') {
     return get2048DifficultyFromDay(day);
   }
-  
+
   if (gameDifficulty === 'dynamic') {
     return getDifficultyFromDay(day);
   }
@@ -157,12 +157,12 @@ export const getRotationIndexForDay = (day: number): number => {
  */
 export const getGameTypeForBusinessDay = (day: number): string => {
   const envGame = process.env[`DAY_${day}_GAME`];
-  
+
   // If "all", return special value for game selection
   if (envGame === 'all') {
     return 'all';
   }
-  
+
   // If a specific game is provided, validate and return it
   if (envGame) {
     const gameTypes = Object.keys(GAMES_CONFIG);
@@ -170,9 +170,11 @@ export const getGameTypeForBusinessDay = (day: number): string => {
       return envGame;
     }
     // Invalid game name, fall back to rotation
-    console.warn(`Invalid game name "${envGame}" for day ${day}, using rotation`);
+    console.warn(
+      `Invalid game name "${envGame}" for day ${day}, using rotation`
+    );
   }
-  
+
   // Default: use rotation logic
   const rotationIndex = getRotationIndexForDay(day);
   return getGameTypeFromDay(rotationIndex);

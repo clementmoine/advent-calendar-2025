@@ -21,12 +21,20 @@ export async function GET(
 
     // In development mode, allow access even if not in December
     const isDevelopment = process.env.NODE_ENV === 'development';
+    const isDecember = today.getMonth() === 11;
 
     // Check if the day is unlocked
-    const businessDayIndex = getBusinessDayIndex(today);
-    // In production, block access to future days (even in December)
-    if (!isDevelopment && day > businessDayIndex) {
-      const daysRemaining = day - businessDayIndex;
+    // In production, use calendar day (1-25) if in December, otherwise use business day index
+    const currentCalendarDay = isDecember ? today.getDate() : 0;
+    const maxAvailableDay = isDevelopment
+      ? 25
+      : isDecember
+        ? currentCalendarDay
+        : getBusinessDayIndex(today);
+
+    // In production, block access to future days
+    if (!isDevelopment && day > maxAvailableDay) {
+      const daysRemaining = day - maxAvailableDay;
       return NextResponse.json(
         {
           error: 'This day is not yet unlocked!',
@@ -49,7 +57,7 @@ export async function GET(
 
     // Determine the game type for this day, skipping disabled days in rotation
     const gameType = getGameTypeForBusinessDay(day);
-    
+
     // If "all", return special indicator
     if (gameType === 'all') {
       return NextResponse.json({
@@ -59,7 +67,7 @@ export async function GET(
         requiresSelection: true,
       });
     }
-    
+
     const gameConfig = GAMES_CONFIG[gameType];
 
     const gameData = {

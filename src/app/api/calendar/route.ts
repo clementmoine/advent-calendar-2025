@@ -89,21 +89,35 @@ export async function GET() {
       return count;
     };
 
-    // In development mode, allow access to all days
+    // Get the current calendar day (1-25) if we're in December
+    const currentCalendarDay = isDecember ? today.getDate() : 0;
     const businessDayIndex = getBusinessDayIndex(today);
-    const availableDays = isDevelopment ? 25 : Math.min(businessDayIndex, 25);
+
+    // In development mode, allow access to all days
+    // In production, unlock all calendar days up to today (not just business days)
+    const availableDays = isDevelopment
+      ? 25
+      : isDecember
+        ? Math.min(currentCalendarDay, 25)
+        : 0;
 
     // Return calendar information
     const calendarData = {
-      currentDay: isDevelopment ? 25 : businessDayIndex,
+      currentDay: isDevelopment
+        ? 25
+        : isDecember
+          ? currentCalendarDay
+          : businessDayIndex,
       totalDays: 25,
       availableDays,
       games: games,
       message: isDevelopment
         ? 'Cliquez sur une case pour découvrir le jeu du jour !'
-        : businessDayIndex <= 25
-          ? `Jour ${businessDayIndex} (jours ouvrés) sur 25`
-          : 'Calendrier terminé !',
+        : isDecember
+          ? currentCalendarDay <= 25
+            ? `Jour ${currentCalendarDay} sur 25`
+            : 'Calendrier terminé !'
+          : "Le calendrier de l'avent est disponible en décembre !",
     };
 
     return NextResponse.json(calendarData);
